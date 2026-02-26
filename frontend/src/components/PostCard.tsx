@@ -1,5 +1,7 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { formatDate } from "@/lib/utils";
 import type { BlogPost } from "@/lib/notion";
 
@@ -8,17 +10,20 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
+  const [imgError, setImgError] = useState(false);
+  const showImage = post.coverImage && !imgError;
+
   return (
     <Link href={`/blog/${post.slug}`} className="group block">
       <article className="overflow-hidden rounded-2xl bg-surface-subtle shadow-card transition-shadow duration-200 hover:shadow-card-hover">
-        {post.coverImage && (
+        {showImage && (
           <div className="relative aspect-[2/1] w-full overflow-hidden bg-surface-subtle">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={post.coverImage}
               alt={post.title}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              onError={() => setImgError(true)}
             />
           </div>
         )}

@@ -178,6 +178,19 @@ async function fetchAllPosts(): Promise<BlogPost[]> {
       cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
     } while (cursor);
 
+    // For posts without a cover image, try to extract the first image block
+    const postsWithoutCover = results.filter((p) => !p.coverImage);
+    if (postsWithoutCover.length > 0) {
+      const imageResults = await Promise.all(
+        postsWithoutCover.map((p) => extractFirstImage(p.id))
+      );
+      postsWithoutCover.forEach((post, i) => {
+        if (imageResults[i]) {
+          post.coverImage = imageResults[i];
+        }
+      });
+    }
+
     _postsCache = results;
     _postsCacheTime = now;
     return _postsCache;
@@ -274,6 +287,39 @@ async function fetchChildrenRecursive(
   });
 
   await Promise.all(promises);
+}
+
+// ─────────────────────────────────────────────
+// Preview Image Fallback
+// For posts without a cover image, fetch the first image block from the page.
+// ─────────────────────────────────────────────
+
+async function extractFirstImage(pageId: string): Promise<string | undefined> {
+  try {
+    let cursor: string | undefined = undefined;
+
+    do {
+      const response = await notion.blocks.children.list({
+        block_id: pageId,
+        start_cursor: cursor,
+        page_size: 100,
+      });
+
+      for (const block of response.results) {
+        if (!("type" in block)) continue;
+        if (block.type === "image") {
+          const img = block.image;
+          if (img.type === "file") return img.file.url;
+          if (img.type === "external") return img.external.url;
+        }
+      }
+
+      cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
+    } while (cursor);
+  } catch (error) {
+    console.error(`[notion] extractFirstImage(${pageId}) error:`, error);
+  }
+  return undefined;
 }
 
 // ─────────────────────────────────────────────
