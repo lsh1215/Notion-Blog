@@ -1,7 +1,7 @@
 import { PostGrid } from "@/components/PostGrid";
 import { getPaginatedPosts } from "@/lib/notion";
 
-const INITIAL_COUNT = 9;
+const INITIAL_COUNT = 15;
 
 export default async function BlogPage() {
   const { posts, total } = await getPaginatedPosts(0, INITIAL_COUNT);
