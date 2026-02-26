@@ -25,7 +25,9 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
 - **CMS**: Notion API (`@notionhq/client`)
-- **Deployment**: Vercel (예정)
+- **Syntax Highlighting**: Shiki (dual theme)
+- **Dark Mode**: next-themes
+- **Deployment**: Vercel
 
 ## Notion Database Schema
 
@@ -49,14 +51,14 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 | US-003 | 포스트 목록 조회 기능 | ✅ 완료 | dataSources.query API, 60초 캐시 |
 | US-004 | 포스트 상세 페이지 (블록 렌더링) | ✅ 완료 | 16가지 블록 타입 렌더링 |
 | US-005 | 블로그 홈페이지 UI | ✅ 완료 | 히어로 + 최근 포스트 그리드, 카드에 카테고리 표시 |
-| US-006 | 포스트 상세 페이지 UI | ✅ 완료 | prose 타이포그래피, 코드블록 (구문강조 미적용) |
+| US-006 | 포스트 상세 페이지 UI | ✅ 완료 | prose 타이포그래피, shiki 구문 강조, 언어 라벨 |
 | US-007 | 태그 필터링 기능 | 🔄 변경됨 | 블로그 페이지에서 TagFilter 제거, 태그 페이지에서만 사용 |
 | US-008 | SEO 및 메타데이터 | ⏳ 부분 완료 | Metadata API 적용, sitemap/robots 미구현 |
 | US-009 | 카테고리 페이지 | ✅ 완료 | 카테고리 목록 + 상세 페이지 |
 | US-010 | 태그 클라우드 페이지 | ✅ 완료 | 글 개수 기반 크기 조절 |
 | US-011 | 아카이브 페이지 | ✅ 완료 | 연도별 그룹핑 |
-| US-012 | 소개(About) 페이지 | ✅ 완료 | 프로필, 스킬, 연락처 |
-| US-013 | 포트폴리오 페이지 | ✅ 완료 | 목록 + 상세 (Notion 연동 대기) |
+| US-012 | 소개(About) 페이지 | ⏸ 준비 중 | mock 데이터 제거, 플레이스홀더 표시 |
+| US-013 | 포트폴리오 페이지 | ⏸ 준비 중 | mock 데이터 제거, 플레이스홀더 표시 |
 
 ---
 
@@ -121,10 +123,10 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 - **Acceptance Criteria**:
   - [x] 포스트 헤더 (제목, 게시일, 태그)
   - [x] 본문 타이포그래피 스타일링
-  - [ ] 코드 블록 구문 강조 (syntax highlighting) — 기본 스타일만 적용
+  - [x] 코드 블록 구문 강조 (shiki dual theme + 언어 라벨 배지)
   - [x] 이미지 최적화 (Next.js Image)
   - [x] 홈으로 돌아가기 네비게이션
-- **구현 파일**: `frontend/src/app/blog/[slug]/page.tsx`, `frontend/src/app/globals.css` (.prose)
+- **구현 파일**: `frontend/src/app/blog/[slug]/page.tsx`, `frontend/src/app/globals.css`, `frontend/src/lib/notion-renderer.tsx`
 
 ### US-007: 태그 필터링 기능 🔄
 
@@ -172,25 +174,26 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
   - [x] 전체 글 개수 표시
 - **구현 파일**: `frontend/src/app/archives/page.tsx`
 
-### US-012: 소개(About) 페이지 ✅
+### US-012: 소개(About) 페이지 ⏸
 
 - **설명**: 블로그 운영자 소개 페이지를 구현한다.
 - **Acceptance Criteria**:
-  - [x] 프로필 영역
-  - [x] 스킬 목록
-  - [x] 연락처 링크
-  - [x] 블로그 기술 스택 소개
+  - [ ] 프로필 영역
+  - [ ] 스킬 목록
+  - [ ] 연락처 링크
+  - [ ] 블로그 기술 스택 소개
 - **구현 파일**: `frontend/src/app/about/page.tsx`
+- **현재 상태**: mock 데이터 제거, "준비 중" 플레이스홀더 표시
 
-### US-013: 포트폴리오 페이지 ✅
+### US-013: 포트폴리오 페이지 ⏸
 
 - **설명**: 노션 기반 포트폴리오 목록과 상세 페이지를 구현한다.
 - **Acceptance Criteria**:
-  - [x] 포트폴리오 목록 (가로형 카드, 기술스택 표시)
-  - [x] 포트폴리오 상세 페이지 (노션 콘텐츠 렌더링)
-  - [x] 외부 링크 (GitHub, Demo 등)
+  - [ ] 포트폴리오 목록 (가로형 카드, 기술스택 표시)
+  - [ ] 포트폴리오 상세 페이지 (노션 콘텐츠 렌더링)
+  - [ ] 외부 링크 (GitHub, Demo 등)
 - **구현 파일**: `frontend/src/app/portfolio/page.tsx`, `frontend/src/app/portfolio/[slug]/page.tsx`
-- **대기 사항**: Notion 포트폴리오 데이터베이스 연동
+- **현재 상태**: mock 데이터 제거, "준비 중" 플레이스홀더 표시. Notion 포트폴리오 DB 연동 필요
 
 ---
 
@@ -199,9 +202,14 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 1. ~~`@notionhq/client` 설치 및 Notion 클라이언트 모듈 생성~~ ✅
 2. ~~mock-data.ts → Notion API 호출로 교체~~ ✅
 3. ~~markdown.ts → Notion 블록 렌더러로 교체~~ ✅
+4. ~~코드 구문 강조 (shiki dual theme + 언어 라벨)~~ ✅
+5. ~~토글 블록 자식 콘텐츠 재귀 로드~~ ✅
+6. ~~다크 모드 (next-themes + CSS 변수 자동 전환)~~ ✅
+7. ~~mock 데이터 정리 (mock-data.ts, markdown.ts 삭제)~~ ✅
+8. ~~Vercel 배포~~ ✅
 
 ## 다음 단계
 
-1. 코드 구문 강조 — shiki로 언어별 색상 구분 (C, Java 등 노션에서 설정한 언어 반영)
-2. 토글 블록 자식 콘텐츠 로드 — has_children 블록 재귀 fetch
-3. 다크 모드 지원
+1. About 페이지 콘텐츠 작성
+2. 포트폴리오 Notion DB 연동
+3. SEO (sitemap.xml, robots.txt)
