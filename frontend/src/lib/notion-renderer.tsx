@@ -3,7 +3,7 @@
  * Server Component (no "use client" directive needed).
  */
 
-import { codeToHtml } from "shiki";
+import { codeToHtml } from "shiki/bundle/web";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,24 +36,24 @@ interface NotionRendererProps {
 
 const COLOR_CLASS_MAP: Record<string, string> = {
   default: "",
-  gray: "text-slate-500",
-  brown: "text-amber-800",
-  orange: "text-orange-500",
-  yellow: "text-yellow-500",
-  green: "text-green-600",
-  blue: "text-blue-600",
-  purple: "text-purple-600",
-  pink: "text-pink-500",
-  red: "text-red-500",
-  gray_background: "bg-slate-100",
-  brown_background: "bg-amber-50",
-  orange_background: "bg-orange-50",
-  yellow_background: "bg-yellow-50",
-  green_background: "bg-green-50",
-  blue_background: "bg-blue-50",
-  purple_background: "bg-purple-50",
-  pink_background: "bg-pink-50",
-  red_background: "bg-red-50",
+  gray: "text-slate-500 dark:text-slate-400",
+  brown: "text-amber-800 dark:text-amber-400",
+  orange: "text-orange-500 dark:text-orange-400",
+  yellow: "text-yellow-500 dark:text-yellow-400",
+  green: "text-green-600 dark:text-green-400",
+  blue: "text-blue-600 dark:text-blue-400",
+  purple: "text-purple-600 dark:text-purple-400",
+  pink: "text-pink-500 dark:text-pink-400",
+  red: "text-red-500 dark:text-red-400",
+  gray_background: "bg-slate-100 dark:bg-slate-800",
+  brown_background: "bg-amber-50 dark:bg-amber-900/30",
+  orange_background: "bg-orange-50 dark:bg-orange-900/30",
+  yellow_background: "bg-yellow-50 dark:bg-yellow-900/30",
+  green_background: "bg-green-50 dark:bg-green-900/30",
+  blue_background: "bg-blue-50 dark:bg-blue-900/30",
+  purple_background: "bg-purple-50 dark:bg-purple-900/30",
+  pink_background: "bg-pink-50 dark:bg-pink-900/30",
+  red_background: "bg-red-50 dark:bg-red-900/30",
 };
 
 // ---------------------------------------------------------------------------
@@ -159,7 +159,10 @@ async function renderCodeAsync(block: any): Promise<React.ReactNode> {
   try {
     const html = await codeToHtml(code, {
       lang,
-      theme: "github-light",
+      themes: {
+        light: "github-light",
+        dark: "github-dark",
+      },
     });
     return (
       <div
@@ -171,7 +174,7 @@ async function renderCodeAsync(block: any): Promise<React.ReactNode> {
   } catch {
     // Fallback if language is not supported by shiki
     return (
-      <pre key={block.id} className="not-prose my-4 overflow-x-auto rounded-xl bg-slate-50 p-4 text-sm">
+      <pre key={block.id} className="not-prose my-4 overflow-x-auto rounded-xl bg-surface-muted p-4 text-sm">
         <code>{code}</code>
       </pre>
     );
@@ -200,7 +203,7 @@ function renderImage(block: any) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt={caption || "Notion image"} />
       {caption && (
-        <figcaption className="text-center text-sm text-slate-500 mt-2">
+        <figcaption className="text-center text-sm text-ink-muted mt-2">
           {caption}
         </figcaption>
       )}
@@ -311,20 +314,20 @@ function renderBookmark(block: any) {
   return (
     <div
       key={block.id}
-      className="not-prose my-4 rounded-xl border border-slate-200 overflow-hidden"
+      className="not-prose my-4 rounded-xl border border-surface-border overflow-hidden"
     >
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors"
+        className="flex items-center gap-3 p-4 hover:bg-surface-subtle transition-colors"
       >
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-900 truncate">{caption}</p>
-          <p className="text-xs text-slate-500 truncate mt-0.5">{url}</p>
+          <p className="text-sm font-medium text-ink truncate">{caption}</p>
+          <p className="text-xs text-ink-muted truncate mt-0.5">{url}</p>
         </div>
         <svg
-          className="w-4 h-4 text-slate-400 flex-shrink-0"
+          className="w-4 h-4 text-ink-muted flex-shrink-0"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -351,7 +354,7 @@ function renderEmbed(block: any) {
     <div key={block.id} className="not-prose my-4">
       <iframe
         src={url}
-        className="w-full rounded-xl border border-slate-200"
+        className="w-full rounded-xl border border-surface-border"
         style={{ minHeight: "400px" }}
         allowFullScreen
         title="Embedded content"

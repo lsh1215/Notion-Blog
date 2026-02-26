@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navLinks = [
   { href: "/blog", label: "Blog" },
@@ -21,7 +22,7 @@ export function Header() {
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-surface-border bg-white/80 backdrop-blur-lg">
+    <header className="sticky top-0 z-50 border-b border-surface-border bg-surface/80 backdrop-blur-lg">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
         <Link
           href="/"
@@ -47,12 +48,15 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-surface-subtle md:hidden"
-          aria-label="Toggle menu"
-        >
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-surface-subtle md:hidden"
+            aria-label="Toggle menu"
+          >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             {mobileOpen ? (
               <path
@@ -66,13 +70,14 @@ export function Header() {
                 <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </>
             )}
-          </svg>
-        </button>
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <nav className="border-t border-surface-border bg-white px-6 py-4 md:hidden">
+        <nav className="border-t border-surface-border bg-surface px-6 py-4 md:hidden">
           <div className="flex flex-col gap-3">
             {navLinks.map((link) => (
               <Link

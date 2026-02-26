@@ -26,7 +26,7 @@ export default function PortfolioPage() {
             <Link
               key={project.id}
               href={`/portfolio/${project.slug}`}
-              className="group block overflow-hidden rounded-2xl border border-surface-border transition-all hover:border-accent-violet/30 hover:shadow-card-hover"
+              className="group block overflow-hidden rounded-2xl border border-surface-border bg-surface-subtle transition-all hover:border-accent-violet/30 hover:shadow-card-hover"
             >
               <div className="flex flex-col md:flex-row">
                 {/* Image */}

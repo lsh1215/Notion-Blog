@@ -28,7 +28,7 @@ export default async function CategoriesPage() {
             <Link
               key={category}
               href={`/categories/${encodeURIComponent(category)}`}
-              className="group flex items-center justify-between rounded-2xl border border-surface-border p-6 transition-all hover:border-accent-violet/30 hover:shadow-card"
+              className="group flex items-center justify-between rounded-2xl border border-surface-border bg-surface-subtle p-6 transition-all hover:border-accent-violet/30 hover:shadow-card"
             >
               <div>
                 <h2 className="text-lg font-semibold tracking-heading text-ink group-hover:text-accent-violet">

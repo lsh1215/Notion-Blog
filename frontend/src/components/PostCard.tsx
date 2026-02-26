@@ -10,7 +10,7 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   return (
     <Link href={`/blog/${post.slug}`} className="group block">
-      <article className="overflow-hidden rounded-2xl shadow-card transition-shadow duration-200 hover:shadow-card-hover">
+      <article className="overflow-hidden rounded-2xl bg-surface-subtle shadow-card transition-shadow duration-200 hover:shadow-card-hover">
         {post.coverImage && (
           <div className="relative aspect-[2/1] w-full overflow-hidden bg-surface-subtle">
             <Image

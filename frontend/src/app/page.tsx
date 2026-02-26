@@ -22,7 +22,7 @@ export default async function Home() {
           <div className="mt-8 flex items-center justify-center gap-4">
             <Link
               href="/blog"
-              className="inline-flex items-center rounded-full bg-gradient-to-b from-dark-surface to-dark-bg px-6 py-3 text-sm font-medium text-white shadow-[inset_0px_2px_0px_0px_rgba(255,255,255,0.1)] transition-opacity hover:opacity-90"
+              className="inline-flex items-center rounded-full bg-ink px-6 py-3 text-sm font-medium text-surface shadow-[inset_0px_2px_0px_0px_rgba(255,255,255,0.1)] transition-opacity hover:opacity-90"
             >
               글 둘러보기
             </Link>
