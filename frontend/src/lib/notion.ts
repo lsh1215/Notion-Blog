@@ -232,11 +232,48 @@ export async function getPageBlocks(
       blocks.push(...response.results);
       cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
     } while (cursor);
+
+    // Recursively fetch children for blocks that have them (toggle, table, etc.)
+    await fetchChildrenRecursive(blocks);
   } catch (error) {
     console.error(`[notion] getPageBlocks(${pageId}) error:`, error);
   }
 
   return blocks;
+}
+
+async function fetchChildrenRecursive(
+  blocks: (BlockObjectResponse | PartialBlockObjectResponse)[]
+): Promise<void> {
+  const promises = blocks.map(async (block) => {
+    if (!("has_children" in block) || !block.has_children) return;
+    if (!("type" in block)) return;
+
+    try {
+      const children: (BlockObjectResponse | PartialBlockObjectResponse)[] = [];
+      let cursor: string | undefined = undefined;
+
+      do {
+        const response = await notion.blocks.children.list({
+          block_id: block.id,
+          start_cursor: cursor,
+          page_size: 100,
+        });
+        children.push(...response.results);
+        cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
+      } while (cursor);
+
+      // Attach children to the block object for the renderer to access
+      (block as any).children = children;
+
+      // Recurse into children
+      await fetchChildrenRecursive(children);
+    } catch (error) {
+      console.error(`[notion] fetchChildren(${block.id}) error:`, error);
+    }
+  });
+
+  await Promise.all(promises);
 }
 
 // ─────────────────────────────────────────────

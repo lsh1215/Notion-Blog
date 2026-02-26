@@ -45,12 +45,12 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 | US | 제목 | 상태 | 비고 |
 |----|------|------|------|
 | US-001 | Next.js 프로젝트 초기화 | ✅ 완료 | Next.js 16 + TS + Tailwind v4 |
-| US-002 | Notion API 연동 및 타입 정의 | ⏳ 부분 완료 | 타입 정의 + .env.example 완료, API 연동 대기 |
-| US-003 | 포스트 목록 조회 기능 | ⏳ 부분 완료 | mock 데이터로 UI 구현, Notion API 연동 대기 |
-| US-004 | 포스트 상세 페이지 (블록 렌더링) | ⏳ 부분 완료 | 임시 마크다운 렌더러, Notion 블록 렌더러 필요 |
-| US-005 | 블로그 홈페이지 UI | ✅ 완료 | 히어로 + 최근 포스트 그리드 |
+| US-002 | Notion API 연동 및 타입 정의 | ✅ 완료 | @notionhq/client v5 + notion.ts 모듈 |
+| US-003 | 포스트 목록 조회 기능 | ✅ 완료 | dataSources.query API, 60초 캐시 |
+| US-004 | 포스트 상세 페이지 (블록 렌더링) | ✅ 완료 | 16가지 블록 타입 렌더링 |
+| US-005 | 블로그 홈페이지 UI | ✅ 완료 | 히어로 + 최근 포스트 그리드, 카드에 카테고리 표시 |
 | US-006 | 포스트 상세 페이지 UI | ✅ 완료 | prose 타이포그래피, 코드블록 (구문강조 미적용) |
-| US-007 | 태그 필터링 기능 | ✅ 완료 | URL query param 기반 필터 |
+| US-007 | 태그 필터링 기능 | 🔄 변경됨 | 블로그 페이지에서 TagFilter 제거, 태그 페이지에서만 사용 |
 | US-008 | SEO 및 메타데이터 | ⏳ 부분 완료 | Metadata API 적용, sitemap/robots 미구현 |
 | US-009 | 카테고리 페이지 | ✅ 완료 | 카테고리 목록 + 상세 페이지 |
 | US-010 | 태그 클라우드 페이지 | ✅ 완료 | 글 개수 기반 크기 조절 |
@@ -72,47 +72,48 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
   - [x] dev 서버가 정상 실행됨
 - **구현 파일**: `frontend/package.json`, `frontend/tsconfig.json`, `frontend/next.config.ts`
 
-### US-002: Notion API 연동 및 타입 정의 ⏳
+### US-002: Notion API 연동 및 타입 정의 ✅
 
 - **설명**: Notion API에 연결하고 블로그 데이터베이스에 맞는 타입을 정의한다.
 - **Acceptance Criteria**:
-  - [ ] `@notionhq/client` 패키지 설치
-  - [ ] Notion 클라이언트 초기화 모듈 생성
+  - [x] `@notionhq/client` 패키지 설치 (v5.9.0)
+  - [x] Notion 클라이언트 초기화 모듈 생성
   - [x] 블로그 포스트 타입 정의 (제목, 게시일, 카테고리, 태그, 상태, 설명)
   - [x] 환경변수 템플릿(`.env.example`) 생성
-- **구현 파일**: `frontend/src/lib/mock-data.ts` (타입 정의), `frontend/.env.example`
-- **대기 사항**: Notion Integration 발급 + 데이터베이스 생성
+- **구현 파일**: `frontend/src/lib/notion.ts`, `frontend/.env.example`
+- **비고**: SDK v5에서는 `dataSources.query()` API 사용 (data_source_id 필요)
 
-### US-003: 포스트 목록 조회 기능 ⏳
+### US-003: 포스트 목록 조회 기능 ✅
 
 - **설명**: 게시일 기준으로 정렬된 포스트 목록을 조회한다.
 - **Acceptance Criteria**:
-  - [ ] Notion 데이터베이스에서 상태가 Published인 글만 조회
-  - [ ] 게시일(커스텀 Date 속성) 기준 내림차순 정렬
-  - [x] 포스트 목록 데이터 fetching 함수 구현 (mock)
+  - [x] Notion 데이터베이스에서 상태가 Published인 글만 조회
+  - [x] 게시일(커스텀 Date 속성) 기준 내림차순 정렬
+  - [x] 포스트 목록 데이터 fetching 함수 구현
   - [x] 게시일 속성으로 날짜 표시
-- **구현 파일**: `frontend/src/lib/mock-data.ts`
-- **대기 사항**: Notion API 연동 후 mock → 실제 데이터 교체
+- **구현 파일**: `frontend/src/lib/notion.ts` (`getAllPosts`, `getPostsByCategory`, `getPostsByTag` 등)
+- **비고**: 모듈 레벨 캐시 (60초 TTL), 32개 블로그 포스트 / 9개 카테고리 확인
 
-### US-004: 포스트 상세 페이지 (Notion 블록 렌더링) ⏳
+### US-004: 포스트 상세 페이지 (Notion 블록 렌더링) ✅
 
 - **설명**: Notion 페이지의 블록들을 HTML로 렌더링하여 글 전문을 표시한다.
 - **Acceptance Criteria**:
-  - [ ] Notion 페이지 블록 조회 함수 구현
-  - [ ] 주요 블록 타입 렌더링 (paragraph, heading, list, code, image, quote, callout, divider)
+  - [x] Notion 페이지 블록 조회 함수 구현 (`getPageBlocks`)
+  - [x] 주요 블록 타입 렌더링 (paragraph, heading, list, code, image, quote, callout, divider + toggle, table, bookmark, embed, video, equation)
   - [x] 동적 라우팅 (`/blog/[slug]`) 구현
-- **구현 파일**: `frontend/src/app/blog/[slug]/page.tsx`, `frontend/src/lib/markdown.ts` (임시)
-- **대기 사항**: Notion 블록 렌더러 구현 필요
+- **구현 파일**: `frontend/src/app/blog/[slug]/page.tsx`, `frontend/src/lib/notion-renderer.tsx`
+- **비고**: 16가지 블록 타입 지원, rich text 스타일링 (bold, italic, strikethrough, underline, code, color, link)
 
 ### US-005: 블로그 홈페이지 UI ✅
 
 - **설명**: 포스트 카드 목록이 있는 깔끔한 홈페이지를 구현한다.
 - **Acceptance Criteria**:
-  - [x] 포스트 카드 컴포넌트 (제목, 게시일, 태그, 설명 표시)
+  - [x] 포스트 카드 컴포넌트 (제목, 게시일, 카테고리, 설명 표시)
   - [x] 반응형 레이아웃 (모바일/데스크톱)
   - [x] 게시일 한국어 날짜 형식 포맷팅
-  - [x] 태그 스타일링
-- **구현 파일**: `frontend/src/app/page.tsx`, `frontend/src/components/PostCard.tsx`, `frontend/src/components/Tag.tsx`
+  - [x] 카테고리 표시 (태그 대신)
+- **구현 파일**: `frontend/src/app/page.tsx`, `frontend/src/components/PostCard.tsx`
+- **비고**: 카드에서 태그 대신 카테고리를 표시하도록 변경
 
 ### US-006: 포스트 상세 페이지 UI 및 레이아웃 ✅
 
@@ -125,15 +126,16 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
   - [x] 홈으로 돌아가기 네비게이션
 - **구현 파일**: `frontend/src/app/blog/[slug]/page.tsx`, `frontend/src/app/globals.css` (.prose)
 
-### US-007: 태그 필터링 기능 ✅
+### US-007: 태그 필터링 기능 🔄
 
 - **설명**: 태그를 클릭하면 해당 태그의 글만 필터링하여 보여준다.
 - **Acceptance Criteria**:
-  - [x] 태그별 포스트 필터링 구현
-  - [x] 태그 목록 표시
-  - [x] 선택된 태그 하이라이트
-  - [x] URL query parameter로 필터 상태 유지
-- **구현 파일**: `frontend/src/app/blog/page.tsx`, `frontend/src/components/TagFilter.tsx`
+  - [x] 태그별 포스트 필터링 구현 (태그 페이지에서)
+  - [x] 태그 목록 표시 (태그 페이지에서)
+  - [~] 블로그 페이지의 TagFilter 제거 (사용자 요청)
+  - [x] URL 기반 필터 상태 유지
+- **구현 파일**: `frontend/src/app/tags/page.tsx`
+- **비고**: 블로그 페이지(`/blog`)에서 TagFilter 컴포넌트 제거. 태그 필터링은 태그 페이지(`/tags`)에서만 사용
 
 ### US-008: SEO 및 메타데이터 ⏳
 
@@ -192,12 +194,14 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 
 ---
 
-## 다음 단계 (Notion API 연동 후)
+## 완료된 단계
 
-1. `@notionhq/client` 설치 및 Notion 클라이언트 모듈 생성
-2. mock-data.ts → Notion API 호출로 교체
-3. markdown.ts → Notion 블록 렌더러로 교체
-4. Notion 이미지 URL 만료 대응 (프록시 또는 리빌드)
-5. sitemap.xml, robots.txt 생성
-6. 코드 구문 강조 (shiki 또는 prism)
-7. 다크 모드 지원
+1. ~~`@notionhq/client` 설치 및 Notion 클라이언트 모듈 생성~~ ✅
+2. ~~mock-data.ts → Notion API 호출로 교체~~ ✅
+3. ~~markdown.ts → Notion 블록 렌더러로 교체~~ ✅
+
+## 다음 단계
+
+1. 코드 구문 강조 — shiki로 언어별 색상 구분 (C, Java 등 노션에서 설정한 언어 반영)
+2. 토글 블록 자식 콘텐츠 로드 — has_children 블록 재귀 fetch
+3. 다크 모드 지원

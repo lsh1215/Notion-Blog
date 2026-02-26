@@ -3,6 +3,8 @@
  * Server Component (no "use client" directive needed).
  */
 
+import { codeToHtml } from "shiki";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -139,16 +141,41 @@ function renderHeading(block: any, level: 1 | 2 | 3) {
   return <h3 key={block.id}>{text}</h3>;
 }
 
-function renderCode(block: any) {
+// Notion language names → shiki language IDs mapping (for mismatches)
+const LANG_MAP: Record<string, string> = {
+  "plain text": "text",
+  "c++": "cpp",
+  "c#": "csharp",
+  "objective-c": "objc",
+  "visual basic": "vb",
+};
+
+async function renderCodeAsync(block: any): Promise<React.ReactNode> {
   const richTexts: RichTextObject[] = block.code?.rich_text ?? [];
-  const language: string = block.code?.language ?? "text";
+  const notionLang: string = block.code?.language ?? "plain text";
+  const lang = LANG_MAP[notionLang.toLowerCase()] ?? notionLang.toLowerCase();
   const code = richTexts.map((rt) => rt.plain_text).join("");
 
-  return (
-    <pre key={block.id} className={`not-prose language-${language}`}>
-      <code className={`language-${language}`}>{code}</code>
-    </pre>
-  );
+  try {
+    const html = await codeToHtml(code, {
+      lang,
+      theme: "github-light",
+    });
+    return (
+      <div
+        key={block.id}
+        className="not-prose my-4 overflow-x-auto rounded-xl text-sm [&>pre]:p-4"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  } catch {
+    // Fallback if language is not supported by shiki
+    return (
+      <pre key={block.id} className="not-prose my-4 overflow-x-auto rounded-xl bg-slate-50 p-4 text-sm">
+        <code>{code}</code>
+      </pre>
+    );
+  }
 }
 
 function renderImage(block: any) {
@@ -215,7 +242,7 @@ function renderCallout(block: any) {
   );
 }
 
-function renderToggle(block: any) {
+async function renderToggle(block: any) {
   const richTexts: RichTextObject[] = block.toggle?.rich_text ?? [];
   const children: any[] = block.children ?? [];
 
@@ -444,71 +471,71 @@ function renderListItem(block: any, listType: "ul" | "ol") {
 // Main component
 // ---------------------------------------------------------------------------
 
-export function NotionRenderer({ blocks }: NotionRendererProps) {
+export async function NotionRenderer({ blocks }: NotionRendererProps) {
   if (!blocks || blocks.length === 0) return null;
 
   const groups = groupBlocks(blocks);
 
-  return (
-    <>
-      {groups.map((group, groupIndex) => {
-        if (group.kind === "ul") {
-          return (
-            <ul key={`ul-${groupIndex}`}>
-              {group.blocks.map((b) => renderListItem(b, "ul"))}
-            </ul>
-          );
-        }
+  const rendered = await Promise.all(
+    groups.map(async (group, groupIndex) => {
+      if (group.kind === "ul") {
+        return (
+          <ul key={`ul-${groupIndex}`}>
+            {group.blocks.map((b) => renderListItem(b, "ul"))}
+          </ul>
+        );
+      }
 
-        if (group.kind === "ol") {
-          return (
-            <ol key={`ol-${groupIndex}`}>
-              {group.blocks.map((b) => renderListItem(b, "ol"))}
-            </ol>
-          );
-        }
+      if (group.kind === "ol") {
+        return (
+          <ol key={`ol-${groupIndex}`}>
+            {group.blocks.map((b) => renderListItem(b, "ol"))}
+          </ol>
+        );
+      }
 
-        // Single block
-        const block = group.block;
-        switch (block.type) {
-          case "paragraph":
-            return renderParagraph(block);
-          case "heading_1":
-            return renderHeading(block, 1);
-          case "heading_2":
-            return renderHeading(block, 2);
-          case "heading_3":
-            return renderHeading(block, 3);
-          case "code":
-            return renderCode(block);
-          case "image":
-            return renderImage(block);
-          case "quote":
-            return renderQuote(block);
-          case "callout":
-            return renderCallout(block);
-          case "divider":
-            return <hr key={block.id} />;
-          case "toggle":
-            return renderToggle(block);
-          case "table":
-            return renderTable(block);
-          case "table_row":
-            // table_row blocks are handled inside renderTable via block.children
-            return null;
-          case "bookmark":
-            return renderBookmark(block);
-          case "embed":
-            return renderEmbed(block);
-          case "video":
-            return renderVideo(block);
-          case "equation":
-            return renderEquation(block);
-          default:
-            // Gracefully skip unknown block types
-            return null;
-        }
-      })}
-    </>
+      // Single block
+      const block = group.block;
+      switch (block.type) {
+        case "paragraph":
+          return renderParagraph(block);
+        case "heading_1":
+          return renderHeading(block, 1);
+        case "heading_2":
+          return renderHeading(block, 2);
+        case "heading_3":
+          return renderHeading(block, 3);
+        case "code":
+          return renderCodeAsync(block);
+        case "image":
+          return renderImage(block);
+        case "quote":
+          return renderQuote(block);
+        case "callout":
+          return renderCallout(block);
+        case "divider":
+          return <hr key={block.id} />;
+        case "toggle":
+          return renderToggle(block);
+        case "table":
+          return renderTable(block);
+        case "table_row":
+          // table_row blocks are handled inside renderTable via block.children
+          return null;
+        case "bookmark":
+          return renderBookmark(block);
+        case "embed":
+          return renderEmbed(block);
+        case "video":
+          return renderVideo(block);
+        case "equation":
+          return renderEquation(block);
+        default:
+          // Gracefully skip unknown block types
+          return null;
+      }
+    })
   );
+
+  return <>{rendered}</>;
 }
