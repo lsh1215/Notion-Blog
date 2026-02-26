@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAllTags, getPostCountByTag } from "@/lib/mock-data";
+import { getAllTags, getPostCountByTag } from "@/lib/notion";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   description: "태그별로 분류된 블로그 글을 확인하세요.",
 };
 
-export default function TagsPage() {
-  const tags = getAllTags();
-  const counts = getPostCountByTag();
+export default async function TagsPage() {
+  const tags = await getAllTags();
+  const counts = await getPostCountByTag();
 
   // Sort by count descending for visual weight
   const sortedTags = [...tags].sort(

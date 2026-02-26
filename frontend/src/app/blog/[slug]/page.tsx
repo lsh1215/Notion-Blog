@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Tag } from "@/components/Tag";
 import { formatDate } from "@/lib/utils";
-import { getPostBySlug, mockPosts, mockPostContent } from "@/lib/mock-data";
-import { renderMarkdown } from "@/lib/markdown";
+import { getAllPosts, getPostBySlug, getPageBlocks } from "@/lib/notion";
+import { NotionRenderer } from "@/lib/notion-renderer";
 import type { Metadata } from "next";
 
 interface BlogPostPageProps {
@@ -12,14 +12,15 @@ interface BlogPostPageProps {
 }
 
 export async function generateStaticParams() {
-  return mockPosts.map((post) => ({ slug: post.slug }));
+  const posts = await getAllPosts();
+  return posts.map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
   if (!post) return {};
 
   return {
@@ -37,13 +38,13 @@ export async function generateMetadata({
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const contentHtml = renderMarkdown(mockPostContent);
+  const blocks = await getPageBlocks(post.id);
 
   return (
     <article className="px-6 pb-24 pt-24 md:pt-32">
@@ -105,10 +106,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         )}
 
         {/* Content */}
-        <div
-          className="prose"
-          dangerouslySetInnerHTML={{ __html: contentHtml }}
-        />
+        <div className="prose">
+          <NotionRenderer blocks={blocks} />
+        </div>
       </div>
     </article>
   );

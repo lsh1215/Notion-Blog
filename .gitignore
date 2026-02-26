@@ -21,7 +21,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files
-.env
+frontend/.env
 .env*.local
 .env.development
 .env.production

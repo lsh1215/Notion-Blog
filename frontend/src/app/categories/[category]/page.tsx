@@ -2,7 +2,7 @@ import { PostCard } from "@/components/PostCard";
 import {
   getAllCategories,
   getPostsByCategory,
-} from "@/lib/mock-data";
+} from "@/lib/notion";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -11,7 +11,8 @@ interface CategoryPageProps {
 }
 
 export async function generateStaticParams() {
-  return getAllCategories().map((c) => ({ category: c }));
+  const categories = await getAllCategories();
+  return categories.map((c) => ({ category: c }));
 }
 
 export async function generateMetadata({
@@ -30,7 +31,7 @@ export default async function CategoryDetailPage({
 }: CategoryPageProps) {
   const { category } = await params;
   const decoded = decodeURIComponent(category);
-  const posts = getPostsByCategory(decoded);
+  const posts = await getPostsByCategory(decoded);
 
   return (
     <section className="px-6 pb-24 pt-24 md:pt-32">

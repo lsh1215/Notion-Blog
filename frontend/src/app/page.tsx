@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { PostCard } from "@/components/PostCard";
-import { mockPosts } from "@/lib/mock-data";
+import { getAllPosts } from "@/lib/notion";
 
-export default function Home() {
-  const recentPosts = mockPosts.slice(0, 3);
+export default async function Home() {
+  const posts = await getAllPosts();
+  const recentPosts = posts.slice(0, 3);
 
   return (
     <>

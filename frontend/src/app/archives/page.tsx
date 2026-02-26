@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPostsByYear } from "@/lib/mock-data";
+import { getPostsByYear } from "@/lib/notion";
 import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   description: "시간순으로 정렬된 모든 글을 확인하세요.",
 };
 
-export default function ArchivesPage() {
-  const postsByYear = getPostsByYear();
+export default async function ArchivesPage() {
+  const postsByYear = await getPostsByYear();
   const years = Object.keys(postsByYear).sort((a, b) => b.localeCompare(a));
   const totalPosts = Object.values(postsByYear).flat().length;
 

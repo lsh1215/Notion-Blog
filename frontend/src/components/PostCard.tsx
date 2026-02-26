@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Tag } from "@/components/Tag";
 import { formatDate } from "@/lib/utils";
-import type { BlogPost } from "@/lib/mock-data";
+import type { BlogPost } from "@/lib/notion";
 
 interface PostCardProps {
   post: BlogPost;
@@ -24,11 +23,11 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         )}
         <div className="flex flex-col gap-3 p-6">
-          <div className="flex flex-wrap gap-2">
-            {post.tags.map((tag) => (
-              <Tag key={tag} label={tag} />
-            ))}
-          </div>
+          {post.category && (
+            <span className="text-xs font-medium text-accent-violet">
+              {post.category}
+            </span>
+          )}
           <h2 className="text-lg font-semibold tracking-heading text-ink transition-colors group-hover:text-accent-violet">
             {post.title}
           </h2>

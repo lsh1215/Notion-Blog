@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAllCategories, getPostCountByCategory } from "@/lib/mock-data";
+import { getAllCategories, getPostCountByCategory } from "@/lib/notion";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   description: "카테고리별로 분류된 블로그 글을 확인하세요.",
 };
 
-export default function CategoriesPage() {
-  const categories = getAllCategories();
-  const counts = getPostCountByCategory();
+export default async function CategoriesPage() {
+  const categories = await getAllCategories();
+  const counts = await getPostCountByCategory();
 
   return (
     <section className="px-6 pb-24 pt-24 md:pt-32">
