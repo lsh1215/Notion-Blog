@@ -141,20 +141,54 @@ function renderHeading(block: any, level: 1 | 2 | 3) {
   return <h3 key={block.id}>{text}</h3>;
 }
 
-// Notion language names → shiki language IDs mapping (for mismatches)
+// Notion language names → shiki language IDs mapping
 const LANG_MAP: Record<string, string> = {
   "plain text": "text",
   "c++": "cpp",
   "c#": "csharp",
   "objective-c": "objc",
   "visual basic": "vb",
+  "assembly": "asm",
+  "shell": "bash",
 };
+
+// Display labels for language badges
+const LANG_LABEL: Record<string, string> = {
+  js: "JavaScript",
+  jsx: "JSX",
+  ts: "TypeScript",
+  tsx: "TSX",
+  py: "Python",
+  rb: "Ruby",
+  rs: "Rust",
+  go: "Go",
+  cpp: "C++",
+  csharp: "C#",
+  objc: "Objective-C",
+  bash: "Bash",
+  sh: "Shell",
+  sql: "SQL",
+  html: "HTML",
+  css: "CSS",
+  json: "JSON",
+  yaml: "YAML",
+  xml: "XML",
+  md: "Markdown",
+  text: "Plain Text",
+};
+
+function getLangLabel(lang: string): string {
+  return LANG_LABEL[lang] ?? lang.charAt(0).toUpperCase() + lang.slice(1);
+}
 
 async function renderCodeAsync(block: any): Promise<React.ReactNode> {
   const richTexts: RichTextObject[] = block.code?.rich_text ?? [];
   const notionLang: string = block.code?.language ?? "plain text";
   const lang = LANG_MAP[notionLang.toLowerCase()] ?? notionLang.toLowerCase();
   const code = richTexts.map((rt) => rt.plain_text).join("");
+  const label = getLangLabel(lang);
+  const captionRichTexts: RichTextObject[] = block.code?.caption ?? [];
+  const caption = captionRichTexts.map((rt) => rt.plain_text).join("");
 
   try {
     const html = await codeToHtml(code, {
@@ -165,18 +199,31 @@ async function renderCodeAsync(block: any): Promise<React.ReactNode> {
       },
     });
     return (
-      <div
-        key={block.id}
-        className="not-prose my-4 overflow-x-auto rounded-xl text-sm [&>pre]:p-4"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      <div key={block.id} className="not-prose my-6 overflow-hidden rounded-xl border border-surface-border">
+        {/* Language badge */}
+        <div className="flex items-center justify-between border-b border-surface-border bg-surface-subtle px-4 py-2">
+          <span className="text-xs font-medium text-ink-muted">{label}</span>
+          {caption && (
+            <span className="text-xs text-ink-muted">{caption}</span>
+          )}
+        </div>
+        {/* Code */}
+        <div
+          className="overflow-x-auto text-sm [&>pre]:p-4 [&>pre]:!rounded-none [&>pre]:!m-0"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
     );
   } catch {
-    // Fallback if language is not supported by shiki
     return (
-      <pre key={block.id} className="not-prose my-4 overflow-x-auto rounded-xl bg-surface-muted p-4 text-sm">
-        <code>{code}</code>
-      </pre>
+      <div key={block.id} className="not-prose my-6 overflow-hidden rounded-xl border border-surface-border">
+        <div className="flex items-center border-b border-surface-border bg-surface-subtle px-4 py-2">
+          <span className="text-xs font-medium text-ink-muted">{label}</span>
+        </div>
+        <pre className="overflow-x-auto bg-surface-muted p-4 text-sm">
+          <code>{code}</code>
+        </pre>
+      </div>
     );
   }
 }

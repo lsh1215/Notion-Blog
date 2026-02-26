@@ -217,12 +217,8 @@ body {
 /* ─────────────────────────────────────────────────────────────
    Shiki dual theme (light / dark auto-switch)
    ───────────────────────────────────────────────────────────── */
-.shiki,
-.shiki span {
-  color: var(--shiki-light) !important;
-  background-color: var(--shiki-light-bg) !important;
-}
-
+/* Light mode: shiki inlines light colors directly — no override needed.
+   Dark mode: swap to --shiki-dark CSS variables. */
 .dark .shiki,
 .dark .shiki span {
   color: var(--shiki-dark) !important;
