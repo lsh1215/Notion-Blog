@@ -1,8 +1,10 @@
-import { PostCard } from "@/components/PostCard";
-import { getAllPosts } from "@/lib/notion";
+import { PostGrid } from "@/components/PostGrid";
+import { getPaginatedPosts } from "@/lib/notion";
+
+const INITIAL_COUNT = 9;
 
 export default async function BlogPage() {
-  const posts = await getAllPosts();
+  const { posts, total } = await getPaginatedPosts(0, INITIAL_COUNT);
 
   return (
     <section className="px-6 pb-24 pt-24 md:pt-32">
@@ -19,11 +21,7 @@ export default async function BlogPage() {
 
         {/* Post Grid */}
         {posts.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
+          <PostGrid initialPosts={posts} total={total} />
         ) : (
           <div className="py-20 text-center">
             <p className="text-ink-muted">아직 글이 없습니다.</p>

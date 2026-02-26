@@ -178,19 +178,6 @@ async function fetchAllPosts(): Promise<BlogPost[]> {
       cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
     } while (cursor);
 
-    // For posts without a cover image, try to extract the first image block
-    const postsWithoutCover = results.filter((p) => !p.coverImage);
-    if (postsWithoutCover.length > 0) {
-      const imageResults = await Promise.all(
-        postsWithoutCover.map((p) => extractFirstImage(p.id))
-      );
-      postsWithoutCover.forEach((post, i) => {
-        if (imageResults[i]) {
-          post.coverImage = imageResults[i];
-        }
-      });
-    }
-
     _postsCache = results;
     _postsCacheTime = now;
     return _postsCache;
@@ -320,6 +307,33 @@ async function extractFirstImage(pageId: string): Promise<string | undefined> {
     console.error(`[notion] extractFirstImage(${pageId}) error:`, error);
   }
   return undefined;
+}
+
+// ─────────────────────────────────────────────
+// Paginated Posts (with preview image enrichment)
+// ─────────────────────────────────────────────
+
+export async function getPaginatedPosts(
+  offset: number,
+  limit: number
+): Promise<{ posts: BlogPost[]; total: number }> {
+  const all = await fetchAllPosts();
+  const slice = all.slice(offset, offset + limit);
+  await enrichWithPreviewImages(slice);
+  return { posts: slice, total: all.length };
+}
+
+/** Enrich posts that lack a cover image with the first image block. */
+async function enrichWithPreviewImages(posts: BlogPost[]): Promise<void> {
+  const withoutCover = posts.filter((p) => !p.coverImage);
+  if (withoutCover.length === 0) return;
+
+  const images = await Promise.all(
+    withoutCover.map((p) => extractFirstImage(p.id))
+  );
+  withoutCover.forEach((post, i) => {
+    if (images[i]) post.coverImage = images[i];
+  });
 }
 
 // ─────────────────────────────────────────────

@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { PostCard } from "@/components/PostCard";
-import { getAllPosts } from "@/lib/notion";
+import { getPaginatedPosts } from "@/lib/notion";
 
 export default async function Home() {
-  const posts = await getAllPosts();
-  const recentPosts = posts.slice(0, 3);
+  const { posts: recentPosts } = await getPaginatedPosts(0, 3);
 
   return (
     <>
