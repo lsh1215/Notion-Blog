@@ -1,4 +1,5 @@
 import { PostGrid } from "@/components/PostGrid";
+import { SearchBar } from "@/components/SearchBar";
 import { getPaginatedPosts } from "@/lib/notion";
 
 // Revalidate every 30 minutes so Notion S3 URLs stay fresh
@@ -22,14 +23,16 @@ export default async function BlogPage() {
           </p>
         </div>
 
-        {/* Post Grid */}
-        {posts.length > 0 ? (
-          <PostGrid initialPosts={posts} total={total} />
-        ) : (
-          <div className="py-20 text-center">
-            <p className="text-ink-muted">아직 글이 없습니다.</p>
-          </div>
-        )}
+        {/* Search + Post Grid */}
+        <SearchBar>
+          {posts.length > 0 ? (
+            <PostGrid initialPosts={posts} total={total} />
+          ) : (
+            <div className="py-20 text-center">
+              <p className="text-ink-muted">아직 글이 없습니다.</p>
+            </div>
+          )}
+        </SearchBar>
       </div>
     </section>
   );
