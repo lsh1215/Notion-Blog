@@ -2,20 +2,15 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Tag } from "@/components/Tag";
 import { formatDate } from "@/lib/utils";
-import { getAllPosts, getPostBySlug, getPageBlocks } from "@/lib/notion";
+import { getPostBySlug, getPageBlocks } from "@/lib/notion";
 import { NotionRenderer } from "@/lib/notion-renderer";
 import type { Metadata } from "next";
 
-// Revalidate every 30 minutes so Notion S3 URLs stay fresh
+// ISR: pages generated on first visit, revalidated every 30 minutes
 export const revalidate = 1800;
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-  const posts = await getAllPosts();
-  return posts.map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({
