@@ -1,6 +1,9 @@
 import { PostGrid } from "@/components/PostGrid";
 import { getPaginatedPosts } from "@/lib/notion";
 
+// Revalidate every 30 minutes so Notion S3 URLs stay fresh
+export const revalidate = 1800;
+
 const INITIAL_COUNT = 15;
 
 export default async function BlogPage() {

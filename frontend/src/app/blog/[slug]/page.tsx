@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { Tag } from "@/components/Tag";
 import { formatDate } from "@/lib/utils";
 import { getAllPosts, getPostBySlug, getPageBlocks } from "@/lib/notion";
 import { NotionRenderer } from "@/lib/notion-renderer";
 import type { Metadata } from "next";
+
+// Revalidate every 30 minutes so Notion S3 URLs stay fresh
+export const revalidate = 1800;
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -94,13 +96,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         {/* Cover Image */}
         {post.coverImage && (
           <div className="relative mb-12 aspect-[2/1] w-full overflow-hidden rounded-2xl">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={post.coverImage}
               alt={post.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 768px"
-              priority
+              className="h-full w-full object-cover"
             />
           </div>
         )}
