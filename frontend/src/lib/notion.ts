@@ -44,6 +44,28 @@ const notion = new Client({
 const DATABASE_ID = process.env.NOTION_DATABASE_ID!;
 
 // ─────────────────────────────────────────────
+// Image Proxy Helper
+// ─────────────────────────────────────────────
+
+const NOTION_S3_HOSTS = [
+  "prod-files-secure.s3.us-west-2.amazonaws.com",
+  "s3.us-west-2.amazonaws.com",
+];
+
+/** Wrap Notion S3 URLs through our proxy to avoid expiry issues. */
+export function proxyImageUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (NOTION_S3_HOSTS.some((host) => parsed.hostname === host)) {
+      return `/api/image?url=${encodeURIComponent(url)}`;
+    }
+  } catch {
+    // Invalid URL — return as-is
+  }
+  return url;
+}
+
+// ─────────────────────────────────────────────
 // Type Guards
 // ─────────────────────────────────────────────
 
@@ -112,12 +134,10 @@ function extractDescription(properties: PageProperties): string {
 }
 
 function extractCoverImage(page: PageObjectResponse): string | undefined {
-  // NOTE: Notion S3 image URLs expire after ~1 hour.
-  // TODO: Proxy or re-sign these URLs before serving to clients.
   const cover = page.cover;
   if (!cover) return undefined;
   if (cover.type === "external") return cover.external.url;
-  if (cover.type === "file") return cover.file.url;
+  if (cover.type === "file") return proxyImageUrl(cover.file.url);
   return undefined;
 }
 
@@ -296,7 +316,7 @@ async function extractFirstImage(pageId: string): Promise<string | undefined> {
         if (!("type" in block)) continue;
         if (block.type === "image") {
           const img = block.image;
-          if (img.type === "file") return img.file.url;
+          if (img.type === "file") return proxyImageUrl(img.file.url);
           if (img.type === "external") return img.external.url;
         }
       }

@@ -4,6 +4,7 @@
  */
 
 import { codeToHtml } from "shiki/bundle/web";
+import { proxyImageUrl } from "./notion";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -236,7 +237,7 @@ function renderImage(block: any) {
   if (image?.type === "external") {
     src = image.external?.url ?? "";
   } else if (image?.type === "file") {
-    src = image.file?.url ?? "";
+    src = proxyImageUrl(image.file?.url ?? "");
   }
 
   const captionRichTexts: RichTextObject[] = image?.caption ?? [];
