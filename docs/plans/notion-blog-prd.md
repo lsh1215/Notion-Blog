@@ -54,6 +54,9 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 | US-006 | 포스트 상세 페이지 UI | ✅ 완료 | prose 타이포그래피, shiki 구문 강조, 언어 라벨 |
 | US-007 | 태그 필터링 기능 | 🔄 변경됨 | 블로그 페이지에서 TagFilter 제거, 태그 페이지에서만 사용 |
 | US-008 | SEO 및 메타데이터 | ⏳ 부분 완료 | Metadata API 적용, sitemap/robots 미구현 |
+| US-014 | 이미지 프록시 및 ISR | ✅ 완료 | S3 URL 만료 대응, 30분 ISR |
+| US-015 | AI 크롤러 차단 (robots.txt) | ✅ 완료 | GPTBot, CCBot 등 차단 |
+| US-016 | 블로그 검색 기능 | ✅ 완료 | 클라이언트 사이드 필터링 (제목+설명+태그+카테고리) |
 | US-009 | 카테고리 페이지 | ✅ 완료 | 카테고리 목록 + 상세 페이지 |
 | US-010 | 태그 클라우드 페이지 | ✅ 완료 | 글 개수 기반 크기 조절 |
 | US-011 | 아카이브 페이지 | ✅ 완료 | 연도별 그룹핑 |
@@ -195,6 +198,17 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 - **구현 파일**: `frontend/src/app/portfolio/page.tsx`, `frontend/src/app/portfolio/[slug]/page.tsx`
 - **현재 상태**: mock 데이터 제거, "준비 중" 플레이스홀더 표시. Notion 포트폴리오 DB 연동 필요
 
+### US-014: Notion 이미지 프록시 및 ISR ✅
+
+- **설명**: Notion S3 이미지 URL 만료 문제를 해결하여 이미지가 항상 표시되도록 한다.
+- **Acceptance Criteria**:
+  - [x] `/api/image` 프록시 API 라우트 (SSRF 방지 도메인 화이트리스트)
+  - [x] `proxyImageUrl()` 헬퍼 — S3 URL을 프록시 경로로 변환
+  - [x] 커버 이미지, 본문 이미지, fallback 이미지에 프록시 적용
+  - [x] ISR `revalidate=1800` 적용 (블로그 목록/상세 페이지)
+  - [x] 상세 페이지 커버 이미지 `<Image>` → `<img>` 전환
+- **구현 파일**: `frontend/src/app/api/image/route.ts`, `frontend/src/lib/notion.ts`, `frontend/src/lib/notion-renderer.tsx`, `frontend/src/app/blog/[slug]/page.tsx`, `frontend/src/app/blog/page.tsx`
+
 ---
 
 ## 완료된 단계
@@ -207,9 +221,15 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 6. ~~다크 모드 (next-themes + CSS 변수 자동 전환)~~ ✅
 7. ~~mock 데이터 정리 (mock-data.ts, markdown.ts 삭제)~~ ✅
 8. ~~Vercel 배포~~ ✅
+9. ~~무한 스크롤 페이지네이션 (초기 15개 + 3개씩 자동 로드)~~ ✅
+10. ~~카드 미리보기 이미지 (커버 → fallback 첫 이미지 블록)~~ ✅
+11. ~~Notion S3 이미지 프록시 + ISR (만료 URL 문제 해결)~~ ✅
 
 ## 다음 단계
 
-1. About 페이지 콘텐츠 작성
-2. 포트폴리오 Notion DB 연동
-3. SEO (sitemap.xml, robots.txt)
+1. About 페이지 콘텐츠 작성 (US-012)
+2. 포트폴리오 Notion DB 연동 (US-013)
+3. SEO — sitemap.xml (US-008, 필요 시)
+4. 관련 포스트 추천
+5. 댓글 시스템 (giscus 등)
+6. RSS 피드
