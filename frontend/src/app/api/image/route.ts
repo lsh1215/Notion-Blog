@@ -1,36 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Client } from "@notionhq/client";
+import type {
+  PageObjectResponse,
+  BlockObjectResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 
-// Allowed domains for SSRF prevention
-const ALLOWED_HOSTS = [
-  "prod-files-secure.s3.us-west-2.amazonaws.com",
-  "s3.us-west-2.amazonaws.com",
-  "www.notion.so",
-  "images.unsplash.com",
-];
+const notion = new Client({ auth: process.env.NOTION_TOKEN });
 
-function isAllowedUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return ALLOWED_HOSTS.some((host) => parsed.hostname === host);
-  } catch {
-    return false;
-  }
-}
-
+/**
+ * Image proxy that fetches fresh signed URLs from Notion API.
+ *
+ * Usage:
+ *   /api/image?blockId=<id>              — image block
+ *   /api/image?pageId=<id>&type=cover    — page cover image
+ */
 export async function GET(request: NextRequest) {
-  const url = request.nextUrl.searchParams.get("url");
-
-  if (!url) {
-    return NextResponse.json({ error: "Missing url parameter" }, { status: 400 });
-  }
-
-  if (!isAllowedUrl(url)) {
-    return NextResponse.json({ error: "Domain not allowed" }, { status: 403 });
-  }
+  const { searchParams } = request.nextUrl;
+  const blockId = searchParams.get("blockId");
+  const pageId = searchParams.get("pageId");
 
   try {
-    const upstream = await fetch(url, { next: { revalidate: 0 } });
+    let imageUrl: string | null = null;
 
+    if (blockId) {
+      imageUrl = await getFreshBlockImageUrl(blockId);
+    } else if (pageId) {
+      imageUrl = await getFreshCoverImageUrl(pageId);
+    }
+
+    if (!imageUrl) {
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    }
+
+    // Fetch the actual image binary
+    const upstream = await fetch(imageUrl);
     if (!upstream.ok) {
       return NextResponse.json(
         { error: "Upstream fetch failed" },
@@ -45,11 +48,33 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        // Cache the binary for 30 min, serve stale for up to 24h while revalidating
+        "Cache-Control": "public, max-age=1800, stale-while-revalidate=86400",
       },
     });
   } catch (error) {
     console.error("[api/image] proxy error:", error);
     return NextResponse.json({ error: "Failed to fetch image" }, { status: 502 });
   }
+}
+
+async function getFreshBlockImageUrl(blockId: string): Promise<string | null> {
+  const block = await notion.blocks.retrieve({ block_id: blockId });
+  if (!("type" in block) || (block as BlockObjectResponse).type !== "image") {
+    return null;
+  }
+  const image = (block as any).image;
+  if (image?.type === "file") return image.file.url;
+  if (image?.type === "external") return image.external.url;
+  return null;
+}
+
+async function getFreshCoverImageUrl(pageId: string): Promise<string | null> {
+  const page = await notion.pages.retrieve({ page_id: pageId });
+  if (!("cover" in page)) return null;
+  const cover = (page as PageObjectResponse).cover;
+  if (!cover) return null;
+  if (cover.type === "file") return cover.file.url;
+  if (cover.type === "external") return cover.external.url;
+  return null;
 }

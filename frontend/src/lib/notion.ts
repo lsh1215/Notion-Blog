@@ -45,24 +45,19 @@ const DATABASE_ID = process.env.NOTION_DATABASE_ID!;
 
 // ─────────────────────────────────────────────
 // Image Proxy Helper
+// Notion S3 signed URLs expire after ~1 hour.
+// Instead of passing the URL (which expires), pass the block/page ID
+// so the proxy can fetch a fresh signed URL from Notion API.
 // ─────────────────────────────────────────────
 
-const NOTION_S3_HOSTS = [
-  "prod-files-secure.s3.us-west-2.amazonaws.com",
-  "s3.us-west-2.amazonaws.com",
-];
+/** Proxy URL for an image block — fetches fresh URL from Notion API. */
+export function proxyBlockImage(blockId: string): string {
+  return `/api/image?blockId=${blockId}`;
+}
 
-/** Wrap Notion S3 URLs through our proxy to avoid expiry issues. */
-export function proxyImageUrl(url: string): string {
-  try {
-    const parsed = new URL(url);
-    if (NOTION_S3_HOSTS.some((host) => parsed.hostname === host)) {
-      return `/api/image?url=${encodeURIComponent(url)}`;
-    }
-  } catch {
-    // Invalid URL — return as-is
-  }
-  return url;
+/** Proxy URL for a page cover image — fetches fresh URL from Notion API. */
+export function proxyCoverImage(pageId: string): string {
+  return `/api/image?pageId=${pageId}&type=cover`;
 }
 
 // ─────────────────────────────────────────────
@@ -137,7 +132,7 @@ function extractCoverImage(page: PageObjectResponse): string | undefined {
   const cover = page.cover;
   if (!cover) return undefined;
   if (cover.type === "external") return cover.external.url;
-  if (cover.type === "file") return proxyImageUrl(cover.file.url);
+  if (cover.type === "file") return proxyCoverImage(page.id);
   return undefined;
 }
 
@@ -316,7 +311,7 @@ async function extractFirstImage(pageId: string): Promise<string | undefined> {
         if (!("type" in block)) continue;
         if (block.type === "image") {
           const img = block.image;
-          if (img.type === "file") return proxyImageUrl(img.file.url);
+          if (img.type === "file") return proxyBlockImage(block.id);
           if (img.type === "external") return img.external.url;
         }
       }
