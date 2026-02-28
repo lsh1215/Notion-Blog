@@ -53,8 +53,8 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 | US-005 | 블로그 홈페이지 UI | ✅ 완료 | 히어로 + 최근 포스트 그리드, 카드에 카테고리 표시 |
 | US-006 | 포스트 상세 페이지 UI | ✅ 완료 | prose 타이포그래피, shiki 구문 강조, 언어 라벨 |
 | US-007 | 태그 필터링 기능 | 🔄 변경됨 | 블로그 페이지에서 TagFilter 제거, 태그 페이지에서만 사용 |
-| US-008 | SEO 및 메타데이터 | ⏳ 부분 완료 | Metadata API 적용, sitemap/robots 미구현 |
-| US-014 | 이미지 프록시 및 ISR | ✅ 완료 | S3 URL 만료 대응, 30분 ISR |
+| US-008 | SEO 및 메타데이터 | ⏳ 부분 완료 | Metadata API + robots.txt 완료, sitemap 미구현 |
+| US-014 | 이미지 프록시 및 ISR | ✅ 완료 | 블록/페이지 ID 기반 프록시 + 30분 ISR |
 | US-015 | AI 크롤러 차단 (robots.txt) | ✅ 완료 | GPTBot, CCBot 등 차단 |
 | US-016 | 블로그 검색 기능 | ✅ 완료 | 클라이언트 사이드 필터링 (제목+설명+태그+카테고리) |
 | US-009 | 카테고리 페이지 | ✅ 완료 | 카테고리 목록 + 상세 페이지 |
@@ -149,8 +149,8 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
   - [x] Next.js Metadata API 활용
   - [x] 포스트별 동적 title, description, og:image
   - [ ] sitemap.xml 생성
-  - [ ] robots.txt 설정
-- **구현 파일**: 각 page.tsx의 `generateMetadata` / `metadata`
+  - [x] robots.txt 설정 (AI 크롤러 차단)
+- **구현 파일**: 각 page.tsx의 `generateMetadata` / `metadata`, `frontend/src/app/robots.ts`
 
 ### US-009: 카테고리 페이지 ✅
 
@@ -202,12 +202,14 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 
 - **설명**: Notion S3 이미지 URL 만료 문제를 해결하여 이미지가 항상 표시되도록 한다.
 - **Acceptance Criteria**:
-  - [x] `/api/image` 프록시 API 라우트 (SSRF 방지 도메인 화이트리스트)
-  - [x] `proxyImageUrl()` 헬퍼 — S3 URL을 프록시 경로로 변환
+  - [x] `/api/image` 프록시 API 라우트 (블록/페이지 ID 기반)
+  - [x] `proxyBlockImage()` / `proxyCoverImage()` 헬퍼 — ID로 프록시 경로 생성
   - [x] 커버 이미지, 본문 이미지, fallback 이미지에 프록시 적용
   - [x] ISR `revalidate=1800` 적용 (블로그 목록/상세 페이지)
   - [x] 상세 페이지 커버 이미지 `<Image>` → `<img>` 전환
+  - [x] `generateStaticParams` 제거 — 빌드 시 Notion API 타임아웃 방지
 - **구현 파일**: `frontend/src/app/api/image/route.ts`, `frontend/src/lib/notion.ts`, `frontend/src/lib/notion-renderer.tsx`, `frontend/src/app/blog/[slug]/page.tsx`, `frontend/src/app/blog/page.tsx`
+- **비고**: 초기엔 S3 URL을 직접 전달하는 방식이었으나, URL 만료 문제로 블록/페이지 ID 기반으로 전환. 프록시가 매번 Notion API에서 fresh signed URL을 획득.
 
 ---
 
@@ -224,6 +226,9 @@ Next.js 기반 개인 블로그. Notion을 CMS로 활용하여 노션 데이터�
 9. ~~무한 스크롤 페이지네이션 (초기 15개 + 3개씩 자동 로드)~~ ✅
 10. ~~카드 미리보기 이미지 (커버 → fallback 첫 이미지 블록)~~ ✅
 11. ~~Notion S3 이미지 프록시 + ISR (만료 URL 문제 해결)~~ ✅
+12. ~~AI 크롤러 차단 robots.txt~~ ✅
+13. ~~블로그 검색 기능 (클라이언트 사이드 필터링)~~ ✅
+14. ~~이미지 프록시 블록/페이지 ID 기반 전환~~ ✅
 
 ## 다음 단계
 
