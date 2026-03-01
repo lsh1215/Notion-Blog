@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
 import { Tag } from "@/components/Tag";
 import { formatDate } from "@/lib/utils";
-import { getPostBySlug, getPageBlocks } from "@/lib/notion";
+import { getPostBySlug, getTopLevelBlocks, hydrateBlockChildren } from "@/lib/notion";
 import { NotionRenderer } from "@/lib/notion-renderer";
 import type { Metadata } from "next";
 
@@ -33,6 +34,87 @@ export async function generateMetadata({
   };
 }
 
+/** Split blocks into sections at heading_1/heading_2 boundaries. */
+function splitAtHeadings(blocks: any[]): any[][] {
+  const sections: any[][] = [];
+  let current: any[] = [];
+
+  for (const block of blocks) {
+    if (
+      (block.type === "heading_1" || block.type === "heading_2") &&
+      current.length > 0
+    ) {
+      sections.push(current);
+      current = [];
+    }
+    current.push(block);
+  }
+  if (current.length > 0) {
+    sections.push(current);
+  }
+  return sections;
+}
+
+/** Async RSC — hydrates children for its blocks, then renders. */
+async function BlockSection({ blocks }: { blocks: any[] }) {
+  await hydrateBlockChildren(blocks);
+  return <NotionRenderer blocks={blocks} />;
+}
+
+/** Section skeleton shown while each section loads children. */
+function SectionSkeleton() {
+  return (
+    <div className="animate-pulse space-y-3 py-2">
+      <div className="h-4 rounded bg-surface-muted w-full" />
+      <div className="h-4 rounded bg-surface-muted w-11/12" />
+      <div className="h-4 rounded bg-surface-muted w-4/5" />
+    </div>
+  );
+}
+
+/** Skeleton shown while the initial top-level block fetch is in progress. */
+function ContentSkeleton() {
+  return (
+    <div className="animate-pulse space-y-6">
+      <div className="space-y-3">
+        <div className="h-4 bg-surface-muted rounded w-full" />
+        <div className="h-4 bg-surface-muted rounded w-5/6" />
+        <div className="h-4 bg-surface-muted rounded w-4/5" />
+      </div>
+      <div className="space-y-3">
+        <div className="h-4 bg-surface-muted rounded w-full" />
+        <div className="h-4 bg-surface-muted rounded w-3/4" />
+      </div>
+      <div className="h-32 bg-surface-muted rounded-lg w-full" />
+      <div className="space-y-3">
+        <div className="h-4 bg-surface-muted rounded w-full" />
+        <div className="h-4 bg-surface-muted rounded w-11/12" />
+        <div className="h-4 bg-surface-muted rounded w-4/6" />
+      </div>
+      <div className="space-y-3">
+        <div className="h-4 bg-surface-muted rounded w-full" />
+        <div className="h-4 bg-surface-muted rounded w-5/6" />
+      </div>
+    </div>
+  );
+}
+
+/** Fetches top-level blocks and streams sections independently. */
+async function PostContent({ postId }: { postId: string }) {
+  const blocks = await getTopLevelBlocks(postId);
+  const sections = splitAtHeadings(blocks);
+
+  return (
+    <>
+      {sections.map((section, i) => (
+        <Suspense key={i} fallback={<SectionSkeleton />}>
+          <BlockSection blocks={section} />
+        </Suspense>
+      ))}
+    </>
+  );
+}
+
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
@@ -40,8 +122,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!post) {
     notFound();
   }
-
-  const blocks = await getPageBlocks(post.id);
 
   return (
     <article className="px-6 pb-24 pt-24 md:pt-32">
@@ -100,9 +180,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         )}
 
-        {/* Content */}
+        {/* Content - streams sections when ready */}
         <div className="prose">
-          <NotionRenderer blocks={blocks} />
+          <Suspense fallback={<ContentSkeleton />}>
+            <PostContent postId={post.id} />
+          </Suspense>
         </div>
       </div>
     </article>

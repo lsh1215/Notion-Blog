@@ -257,6 +257,35 @@ export async function getPageBlocks(
   return blocks;
 }
 
+/** Fetch top-level blocks only — no recursive children fetching. */
+export async function getTopLevelBlocks(
+  pageId: string
+): Promise<(BlockObjectResponse | PartialBlockObjectResponse)[]> {
+  const blocks: (BlockObjectResponse | PartialBlockObjectResponse)[] = [];
+  try {
+    let cursor: string | undefined = undefined;
+    do {
+      const response = await notion.blocks.children.list({
+        block_id: pageId,
+        start_cursor: cursor,
+        page_size: 100,
+      });
+      blocks.push(...response.results);
+      cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
+    } while (cursor);
+  } catch (error) {
+    console.error(`[notion] getTopLevelBlocks(${pageId}) error:`, error);
+  }
+  return blocks;
+}
+
+/** Hydrate children for a subset of blocks (calls fetchChildrenRecursive). */
+export async function hydrateBlockChildren(
+  blocks: (BlockObjectResponse | PartialBlockObjectResponse)[]
+): Promise<void> {
+  await fetchChildrenRecursive(blocks);
+}
+
 async function fetchChildrenRecursive(
   blocks: (BlockObjectResponse | PartialBlockObjectResponse)[]
 ): Promise<void> {
