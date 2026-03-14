@@ -28,6 +28,14 @@ export default function MermaidBlock({ code, id }: MermaidBlockProps) {
       const { svg } = await mermaid.render(renderId, code);
       if (containerRef.current) {
         containerRef.current.innerHTML = svg;
+        // Make SVG responsive — remove fixed dimensions, scale to container
+        const svgEl = containerRef.current.querySelector("svg");
+        if (svgEl) {
+          svgEl.removeAttribute("height");
+          svgEl.style.width = "100%";
+          svgEl.style.maxWidth = "100%";
+          svgEl.style.height = "auto";
+        }
       }
       setError(null);
     } catch (err) {
@@ -53,8 +61,8 @@ export default function MermaidBlock({ code, id }: MermaidBlockProps) {
   }
 
   return (
-    <div className="not-prose my-6 flex justify-center rounded-xl border border-surface-border bg-white p-6 dark:bg-slate-900">
-      <div ref={containerRef} />
+    <div className="not-prose my-6 overflow-x-auto rounded-xl border border-surface-border bg-white p-6 dark:bg-slate-900">
+      <div ref={containerRef} className="w-full min-w-0" />
     </div>
   );
 }
