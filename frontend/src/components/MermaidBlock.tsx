@@ -15,40 +15,41 @@ export default function MermaidBlock({ code, id }: MermaidBlockProps) {
   const { resolvedTheme } = useTheme();
 
   const renderDiagram = useCallback(async () => {
+    if (!containerRef.current) return;
+
     const isDark = resolvedTheme === "dark";
     mermaid.initialize({
       startOnLoad: false,
       theme: isDark ? "dark" : "default",
       securityLevel: "loose",
+      flowchart: { useMaxWidth: false },
     });
 
     try {
-      // Mermaid caches rendered ids — use unique id per theme to force re-render
+      // Wait for web fonts to load — prevents text measurement mismatch
+      await document.fonts.ready;
+
       const renderId = `mermaid-${id}-${isDark ? "dark" : "light"}`;
       const { svg } = await mermaid.render(renderId, code);
-      if (containerRef.current) {
+
+      if (!containerRef.current) return;
+
+      // Parse SVG and fix dimensions before injecting
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svg, "image/svg+xml");
+      const svgEl = doc.querySelector("svg");
+      if (svgEl) {
+        svgEl.removeAttribute("height");
+        svgEl.removeAttribute("width");
+        svgEl.style.width = "100%";
+        svgEl.style.maxWidth = "100%";
+        svgEl.style.height = "auto";
+        svgEl.style.overflow = "visible";
+        containerRef.current.innerHTML = svgEl.outerHTML;
+      } else {
         containerRef.current.innerHTML = svg;
-        // Make SVG responsive + fix text clipping
-        const svgEl = containerRef.current.querySelector("svg");
-        if (svgEl) {
-          // Expand viewBox to prevent text clipping at edges
-          const vb = svgEl.getAttribute("viewBox");
-          if (vb) {
-            const [x, y, w, h] = vb.split(" ").map(Number);
-            const pad = Math.max(w, h) * 0.03; // 3% padding
-            svgEl.setAttribute(
-              "viewBox",
-              `${x - pad} ${y - pad} ${w + pad * 2} ${h + pad * 2}`
-            );
-          }
-          svgEl.removeAttribute("height");
-          svgEl.removeAttribute("width");
-          svgEl.style.width = "100%";
-          svgEl.style.maxWidth = "100%";
-          svgEl.style.height = "auto";
-          svgEl.style.overflow = "visible";
-        }
       }
+
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Mermaid render failed");
@@ -73,7 +74,7 @@ export default function MermaidBlock({ code, id }: MermaidBlockProps) {
   }
 
   return (
-    <div className="not-prose my-6 overflow-x-auto rounded-xl border border-surface-border bg-white p-6 dark:bg-slate-900">
+    <div className="not-prose mermaid-container my-6 overflow-x-auto rounded-xl border border-surface-border bg-white p-6 dark:bg-slate-900">
       <div ref={containerRef} className="w-full min-w-0" />
     </div>
   );

@@ -271,3 +271,20 @@ body {
   padding-left: 1.5rem;
   padding-top: 0.5rem;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Mermaid — fix foreignObject text clipping
+   ───────────────────────────────────────────────────────────── */
+.mermaid-container svg {
+  overflow: visible;
+}
+
+.mermaid-container .label foreignObject {
+  overflow: visible;
+}
+
+.mermaid-container svg,
+.mermaid-container svg * {
+  transition: none !important;
+  animation: none !important;
+}
