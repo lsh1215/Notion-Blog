@@ -28,13 +28,25 @@ export default function MermaidBlock({ code, id }: MermaidBlockProps) {
       const { svg } = await mermaid.render(renderId, code);
       if (containerRef.current) {
         containerRef.current.innerHTML = svg;
-        // Make SVG responsive — remove fixed dimensions, scale to container
+        // Make SVG responsive + fix text clipping
         const svgEl = containerRef.current.querySelector("svg");
         if (svgEl) {
+          // Expand viewBox to prevent text clipping at edges
+          const vb = svgEl.getAttribute("viewBox");
+          if (vb) {
+            const [x, y, w, h] = vb.split(" ").map(Number);
+            const pad = Math.max(w, h) * 0.03; // 3% padding
+            svgEl.setAttribute(
+              "viewBox",
+              `${x - pad} ${y - pad} ${w + pad * 2} ${h + pad * 2}`
+            );
+          }
           svgEl.removeAttribute("height");
+          svgEl.removeAttribute("width");
           svgEl.style.width = "100%";
           svgEl.style.maxWidth = "100%";
           svgEl.style.height = "auto";
+          svgEl.style.overflow = "visible";
         }
       }
       setError(null);
