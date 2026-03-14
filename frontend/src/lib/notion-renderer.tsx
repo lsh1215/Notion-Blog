@@ -5,6 +5,7 @@
 
 import { codeToHtml } from "shiki/bundle/web";
 import { proxyBlockImage } from "./notion";
+import MermaidBlock from "@/components/MermaidBlock";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -190,6 +191,11 @@ async function renderCodeAsync(block: any): Promise<React.ReactNode> {
   const label = getLangLabel(lang);
   const captionRichTexts: RichTextObject[] = block.code?.caption ?? [];
   const caption = captionRichTexts.map((rt) => rt.plain_text).join("");
+
+  // Mermaid diagrams: render visually instead of syntax highlighting
+  if (lang === "mermaid") {
+    return <MermaidBlock key={block.id} code={code} id={block.id} />;
+  }
 
   try {
     const html = await codeToHtml(code, {
