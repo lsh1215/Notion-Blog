@@ -45,6 +45,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# screenshots
+screenshots/
+
 # claude code / omc
 .claude/
 .omc/
