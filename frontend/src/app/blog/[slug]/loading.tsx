@@ -1,19 +1,19 @@
 export default function BlogPostLoading() {
   return (
-    <article className="px-6 pb-24 pt-24 md:pt-32">
-      <div className="mx-auto max-w-3xl">
-        {/* Back link */}
-        <div className="mb-8 h-4 w-36 animate-pulse rounded-md bg-surface-muted" />
+    <article className="pb-24 pt-24 md:pt-28">
+      {/* Back link */}
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="mb-6 h-4 w-36 animate-pulse rounded-md bg-surface-muted" />
+      </div>
 
-        {/* Post Header */}
+      {/* Cover Image — wide cropped banner */}
+      <div className="mx-auto mb-8 max-w-5xl px-6">
+        <div className="h-40 w-full animate-pulse overflow-hidden rounded-2xl bg-surface-muted sm:h-48 md:h-56 lg:h-64" />
+      </div>
+
+      <div className="mx-auto max-w-3xl px-6">
+        {/* Post Header — title → subtitle → tags */}
         <header className="mb-10">
-          {/* Tags */}
-          <div className="mb-4 flex flex-wrap gap-2">
-            <div className="h-6 w-16 animate-pulse rounded-full bg-surface-muted" />
-            <div className="h-6 w-20 animate-pulse rounded-full bg-surface-muted" />
-            <div className="h-6 w-14 animate-pulse rounded-full bg-surface-muted" />
-          </div>
-
           {/* Title — two lines */}
           <div className="space-y-3">
             <div className="h-9 w-full animate-pulse rounded-lg bg-surface-muted md:h-10 lg:h-[46px]" />
@@ -23,12 +23,16 @@ export default function BlogPostLoading() {
           {/* Description */}
           <div className="mt-4 h-6 w-3/4 animate-pulse rounded-md bg-surface-muted" />
 
+          {/* Tags */}
+          <div className="mt-6 flex flex-wrap gap-2">
+            <div className="h-6 w-16 animate-pulse rounded-full bg-surface-muted" />
+            <div className="h-6 w-20 animate-pulse rounded-full bg-surface-muted" />
+            <div className="h-6 w-14 animate-pulse rounded-full bg-surface-muted" />
+          </div>
+
           {/* Date */}
           <div className="mt-4 h-4 w-28 animate-pulse rounded-md bg-surface-muted" />
         </header>
-
-        {/* Cover Image */}
-        <div className="relative mb-12 aspect-[2/1] w-full animate-pulse overflow-hidden rounded-2xl bg-surface-muted" />
 
         {/* Content — prose body */}
         <div className="space-y-10">

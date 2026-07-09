@@ -10,7 +10,6 @@ const navLinks = [
   { href: "/categories", label: "Categories" },
   { href: "/tags", label: "Tags" },
   { href: "/archives", label: "Archives" },
-  { href: "/portfolio", label: "Portfolio" },
   { href: "/about", label: "About" },
 ];
 

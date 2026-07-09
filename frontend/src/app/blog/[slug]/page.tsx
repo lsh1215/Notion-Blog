@@ -124,12 +124,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   return (
-    <article className="px-6 pb-24 pt-24 md:pt-32">
-      <div className="mx-auto max-w-3xl">
-        {/* Back link */}
+    <article className="pb-24 pt-24 md:pt-28">
+      {/* Back link */}
+      <div className="mx-auto max-w-5xl px-6">
         <Link
           href="/blog"
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-ink-muted transition-colors hover:text-ink"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-ink-muted transition-colors hover:text-ink"
         >
           <svg
             width="16"
@@ -148,18 +148,38 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </svg>
           블로그로 돌아가기
         </Link>
+      </div>
 
-        {/* Post Header */}
-        <header className="mb-10">
-          <div className="mb-4 flex flex-wrap gap-2">
-            {post.tags.map((tag) => (
-              <Tag key={tag} label={tag} asLink />
-            ))}
+      {/* Cover Image — Notion-style wide, cropped banner */}
+      {post.coverImage && (
+        <div className="mx-auto mb-8 max-w-5xl px-6">
+          <div className="h-40 w-full overflow-hidden rounded-2xl sm:h-48 md:h-56 lg:h-64">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.coverImage}
+              alt={post.title}
+              className="h-full w-full object-cover object-center"
+            />
           </div>
+        </div>
+      )}
+
+      <div className="mx-auto max-w-3xl px-6">
+        {/* Post Header — Notion order: title → subtitle → tags */}
+        <header className="mb-10">
           <h1 className="text-3xl font-bold tracking-display text-ink md:text-4xl lg:text-[42px] lg:leading-[1.2]">
             {post.title}
           </h1>
-          <p className="mt-4 text-lg text-ink-secondary">{post.description}</p>
+          {post.description && (
+            <p className="mt-4 text-lg text-ink-secondary">{post.description}</p>
+          )}
+          {post.tags.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-2">
+              {post.tags.map((tag) => (
+                <Tag key={tag} label={tag} asLink />
+              ))}
+            </div>
+          )}
           <time
             dateTime={post.publishedDate}
             className="mt-4 block text-sm text-ink-muted"
@@ -167,18 +187,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             {formatDate(post.publishedDate)}
           </time>
         </header>
-
-        {/* Cover Image */}
-        {post.coverImage && (
-          <div className="relative mb-12 aspect-[2/1] w-full overflow-hidden rounded-2xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={post.coverImage}
-              alt={post.title}
-              className="h-full w-full object-cover"
-            />
-          </div>
-        )}
 
         {/* Content - streams sections when ready */}
         <div className="prose">

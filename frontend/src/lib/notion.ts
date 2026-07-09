@@ -21,18 +21,6 @@ export interface BlogPost {
   coverImage?: string;
 }
 
-export interface PortfolioProject {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  period: string;
-  role: string;
-  techStack: string[];
-  coverImage?: string;
-  links?: { label: string; url: string }[];
-}
-
 // ─────────────────────────────────────────────
 // Notion Client
 // ─────────────────────────────────────────────
@@ -442,12 +430,3 @@ export async function getPostsByYear(): Promise<Record<string, BlogPost[]>> {
   });
   return grouped;
 }
-
-// ─────────────────────────────────────────────
-// Portfolio (not yet implemented - DB not set up)
-// ─────────────────────────────────────────────
-
-// const PORTFOLIO_DATA_SOURCE_ID = process.env.NOTION_PORTFOLIO_DATABASE_ID!;
-
-// export async function getAllPortfolioProjects(): Promise<PortfolioProject[]> { ... }
-// export async function getPortfolioBySlug(slug: string): Promise<PortfolioProject | undefined> { ... }
