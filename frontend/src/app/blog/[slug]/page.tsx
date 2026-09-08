@@ -1,10 +1,16 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 import Link from "next/link";
 import { Tag } from "@/components/Tag";
+import { TableOfContents } from "@/components/TableOfContents";
 import { formatDate } from "@/lib/utils";
-import { getPostBySlug, getTopLevelBlocks, hydrateBlockChildren } from "@/lib/notion";
+import {
+  getPostBySlug,
+  getTopLevelBlocks,
+  hydrateBlockChildren,
+} from "@/lib/notion";
 import { NotionRenderer } from "@/lib/notion-renderer";
+import { extractTableOfContents } from "@/lib/table-of-contents";
 import type { Metadata } from "next";
 
 // ISR: pages generated on first visit, revalidated every 30 minutes
@@ -13,6 +19,8 @@ export const revalidate = 1800;
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
 }
+
+const getCachedTopLevelBlocks = cache(getTopLevelBlocks);
 
 export async function generateMetadata({
   params,
@@ -101,17 +109,36 @@ function ContentSkeleton() {
 
 /** Fetches top-level blocks and streams sections independently. */
 async function PostContent({ postId }: { postId: string }) {
-  const blocks = await getTopLevelBlocks(postId);
+  const blocks = await getCachedTopLevelBlocks(postId);
   const sections = splitAtHeadings(blocks);
+  const tableOfContents = extractTableOfContents(blocks);
 
   return (
     <>
-      {sections.map((section, i) => (
-        <Suspense key={i} fallback={<SectionSkeleton />}>
-          <BlockSection blocks={section} />
-        </Suspense>
-      ))}
+      <TableOfContents items={tableOfContents} variant="mobile" />
+      <div className="prose">
+        {sections.map((section, i) => (
+          <Suspense key={i} fallback={<SectionSkeleton />}>
+            <BlockSection blocks={section} />
+          </Suspense>
+        ))}
+      </div>
     </>
+  );
+}
+
+async function DesktopTableOfContents({ postId }: { postId: string }) {
+  const blocks = await getCachedTopLevelBlocks(postId);
+  const items = extractTableOfContents(blocks);
+
+  if (items.length === 0) return null;
+
+  return (
+    <aside className="hidden xl:col-start-3 xl:block">
+      <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pb-6">
+        <TableOfContents items={items} variant="desktop" />
+      </div>
+    </aside>
   );
 }
 
@@ -164,36 +191,42 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
       )}
 
-      <div className="mx-auto max-w-3xl px-6">
-        {/* Post Header — Notion order: title → subtitle → tags */}
-        <header className="mb-10">
-          <h1 className="text-3xl font-bold tracking-display text-ink md:text-4xl lg:text-[42px] lg:leading-[1.2]">
-            {post.title}
-          </h1>
-          {post.description && (
-            <p className="mt-4 text-lg text-ink-secondary">{post.description}</p>
-          )}
-          {post.tags.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
-                <Tag key={tag} label={tag} asLink />
-              ))}
-            </div>
-          )}
-          <time
-            dateTime={post.publishedDate}
-            className="mt-4 block text-sm text-ink-muted"
-          >
-            {formatDate(post.publishedDate)}
-          </time>
-        </header>
+      <div className="mx-auto max-w-[87rem] px-6 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_14rem] xl:gap-x-12">
+        <div className="mx-auto w-full max-w-3xl xl:col-start-2 xl:mx-0">
+          {/* Post Header — Notion order: title → subtitle → tags */}
+          <header className="mb-10">
+            <h1 className="text-3xl font-bold tracking-display text-ink md:text-4xl lg:text-[42px] lg:leading-[1.2]">
+              {post.title}
+            </h1>
+            {post.description && (
+              <p className="mt-4 text-lg text-ink-secondary">
+                {post.description}
+              </p>
+            )}
+            {post.tags.length > 0 && (
+              <div className="mt-6 flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <Tag key={tag} label={tag} asLink />
+                ))}
+              </div>
+            )}
+            <time
+              dateTime={post.publishedDate}
+              className="mt-4 block text-sm text-ink-muted"
+            >
+              {formatDate(post.publishedDate)}
+            </time>
+          </header>
 
-        {/* Content - streams sections when ready */}
-        <div className="prose">
+          {/* Content - streams sections when ready */}
           <Suspense fallback={<ContentSkeleton />}>
             <PostContent postId={post.id} />
           </Suspense>
         </div>
+
+        <Suspense fallback={null}>
+          <DesktopTableOfContents postId={post.id} />
+        </Suspense>
       </div>
     </article>
   );

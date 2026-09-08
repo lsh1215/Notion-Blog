@@ -75,6 +75,16 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* ─────────────────────────────────────────────────────────────
    Blog post content (prose)
    ───────────────────────────────────────────────────────────── */
@@ -86,6 +96,10 @@ body {
   margin-top: 2.5rem;
   margin-bottom: 1rem;
   color: var(--color-ink);
+}
+
+.prose :is(h1, h2, h3) {
+  scroll-margin-top: 7rem;
 }
 
 .prose h2 {

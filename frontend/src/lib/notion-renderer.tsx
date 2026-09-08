@@ -5,6 +5,7 @@
 
 import { codeToHtml } from "shiki/bundle/web";
 import { proxyBlockImage } from "./notion";
+import { getHeadingId } from "./table-of-contents";
 import MermaidBlock from "@/components/MermaidBlock";
 
 // ---------------------------------------------------------------------------
@@ -137,10 +138,27 @@ function renderHeading(block: any, level: 1 | 2 | 3) {
   const key = `heading_${level}` as "heading_1" | "heading_2" | "heading_3";
   const richTexts: RichTextObject[] = block[key]?.rich_text ?? [];
   const text = renderRichText(richTexts);
+  const id = getHeadingId(block.id);
 
-  if (level === 1) return <h1 key={block.id}>{text}</h1>;
-  if (level === 2) return <h2 key={block.id}>{text}</h2>;
-  return <h3 key={block.id}>{text}</h3>;
+  if (level === 1) {
+    return (
+      <h1 key={block.id} id={id}>
+        {text}
+      </h1>
+    );
+  }
+  if (level === 2) {
+    return (
+      <h2 key={block.id} id={id}>
+        {text}
+      </h2>
+    );
+  }
+  return (
+    <h3 key={block.id} id={id}>
+      {text}
+    </h3>
+  );
 }
 
 // Notion language names → shiki language IDs mapping
