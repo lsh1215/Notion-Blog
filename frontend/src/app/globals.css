@@ -85,6 +85,16 @@ html {
   }
 }
 
+/* Keep a long desktop table of contents scrollable without a nested scrollbar. */
+.toc-scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.toc-scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─────────────────────────────────────────────────────────────
    Blog post content (prose)
    ───────────────────────────────────────────────────────────── */

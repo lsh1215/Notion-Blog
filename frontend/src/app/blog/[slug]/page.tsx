@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 import Link from "next/link";
 import { Tag } from "@/components/Tag";
+import { LightboxImage } from "@/components/LightboxImage";
 import { TableOfContents } from "@/components/TableOfContents";
 import { formatDate } from "@/lib/utils";
 import {
@@ -135,7 +136,7 @@ async function DesktopTableOfContents({ postId }: { postId: string }) {
 
   return (
     <aside className="hidden xl:col-start-3 xl:block">
-      <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pb-6">
+      <div className="toc-scrollbar-hidden sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pb-6">
         <TableOfContents items={items} variant="desktop" />
       </div>
     </aside>
@@ -181,17 +182,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {post.coverImage && (
         <div className="mx-auto mb-8 max-w-5xl px-6">
           <div className="h-40 w-full overflow-hidden rounded-2xl sm:h-48 md:h-56 lg:h-64">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <LightboxImage
               src={post.coverImage}
               alt={post.title}
-              className="h-full w-full object-cover object-center"
+              containerClassName="h-full w-full rounded-2xl"
+              imageClassName="h-full w-full object-cover object-center"
             />
           </div>
         </div>
       )}
 
-      <div className="mx-auto max-w-[87rem] px-6 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_14rem] xl:gap-x-12">
+      <div className="mx-auto max-w-[91rem] px-6 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,48rem)_14rem] xl:gap-x-16">
         <div className="mx-auto w-full max-w-3xl xl:col-start-2 xl:mx-0">
           {/* Post Header — Notion order: title → subtitle → tags */}
           <header className="mb-10">

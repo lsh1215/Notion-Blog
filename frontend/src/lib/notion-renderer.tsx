@@ -6,6 +6,7 @@
 import { codeToHtml } from "shiki/bundle/web";
 import { proxyBlockImage } from "./notion";
 import { getHeadingId } from "./table-of-contents";
+import { LightboxImage } from "@/components/LightboxImage";
 import MermaidBlock from "@/components/MermaidBlock";
 
 // ---------------------------------------------------------------------------
@@ -271,9 +272,11 @@ function renderImage(block: any) {
 
   return (
     <figure key={block.id}>
-      {/* Using <img> directly - Notion S3 URLs expire and aren't compatible with Next.js Image optimization */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={caption || "Notion image"} />
+      <LightboxImage
+        src={src}
+        alt={caption || "블로그 이미지"}
+        caption={caption || undefined}
+      />
       {caption && (
         <figcaption className="text-center text-sm text-ink-muted mt-2">
           {caption}
