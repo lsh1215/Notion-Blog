@@ -1,25 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, Ubuntu } from "next/font/google";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const ubuntu = Ubuntu({
-  variable: "--font-ubuntu",
-  weight: ["700"],
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: {
-    default: "Blog",
-    template: "%s | Blog",
+    default: "sanghun.log",
+    template: "%s | sanghun.log",
   },
   description: "개발과 기술에 대한 생각을 기록합니다.",
 };
@@ -31,10 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${inter.variable} ${ubuntu.variable} antialiased`}>
+      <body className="antialiased">
         <ThemeProvider>
           <Header />
-          <main className="min-h-screen">{children}</main>
+          <main id="main" className="min-h-screen">{children}</main>
           <Footer />
         </ThemeProvider>
       </body>

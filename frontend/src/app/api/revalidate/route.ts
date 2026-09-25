@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest } from "next/server";
+import { clearPostsCache } from "@/lib/notion";
 
 export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get("secret");
@@ -8,6 +9,7 @@ export async function GET(request: NextRequest) {
     return Response.json({ message: "Invalid secret" }, { status: 401 });
   }
 
+  clearPostsCache();
   revalidatePath("/", "page");
   revalidatePath("/blog", "page");
   revalidatePath("/blog/[slug]", "page");

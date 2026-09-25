@@ -3,20 +3,26 @@ import { getAllCategories, getPostCountByCategory } from "@/lib/notion";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Categories",
+  title: "Topics",
   description: "카테고리별로 분류된 블로그 글을 확인하세요.",
 };
+
+const FEATURED_CATEGORIES = ["프로젝트", "MSA", "오픈소스 기여"];
 
 export default async function CategoriesPage() {
   const categories = await getAllCategories();
   const counts = await getPostCountByCategory();
+  const orderedCategories = [
+    ...FEATURED_CATEGORIES.filter((category) => categories.includes(category)),
+    ...categories.filter((category) => !FEATURED_CATEGORIES.includes(category)),
+  ];
 
   return (
     <section className="px-6 pb-24 pt-24 md:pt-32">
       <div className="mx-auto max-w-3xl">
         <div className="mb-12 text-center">
           <h1 className="text-3xl font-semibold tracking-display text-ink md:text-5xl">
-            Categories
+            Topics
           </h1>
           <p className="mt-4 text-lg text-ink-secondary">
             주제별로 글을 모아 보았습니다.
@@ -24,7 +30,7 @@ export default async function CategoriesPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          {categories.map((category) => (
+          {orderedCategories.map((category) => (
             <Link
               key={category}
               href={`/categories/${encodeURIComponent(category)}`}

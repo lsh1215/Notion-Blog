@@ -104,8 +104,8 @@ export function SearchBar({ children }: SearchBarProps) {
                 {results.length}개의 글을 찾았습니다
               </p>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {results.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                {results.map((post, index) => (
+                  <PostCard key={post.id} post={post} index={index + 1} />
                 ))}
               </div>
             </>

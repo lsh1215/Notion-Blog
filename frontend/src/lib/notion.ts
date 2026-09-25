@@ -198,6 +198,25 @@ export async function getAllPosts(): Promise<BlogPost[]> {
   return fetchAllPosts();
 }
 
+export async function getPublishedPostStats(): Promise<{
+  count: number;
+  sinceYear?: string;
+}> {
+  const posts = await fetchAllPosts();
+  const sinceYear = posts.reduce<string | undefined>((earliest, post) => {
+    const publishedYear = post.publishedDate.slice(0, 4);
+    if (!publishedYear) return earliest;
+    return !earliest || publishedYear < earliest ? publishedYear : earliest;
+  }, undefined);
+
+  return { count: posts.length, sinceYear };
+}
+
+export function clearPostsCache(): void {
+  _postsCache = null;
+  _postsCacheTime = 0;
+}
+
 export async function getPostBySlug(slug: string): Promise<BlogPost | undefined> {
   // slug is the page id with dashes removed; reconstruct dashed UUID for API
   const pageId =
@@ -353,6 +372,18 @@ export async function getPaginatedPosts(
   const slice = all.slice(offset, offset + limit);
   await enrichWithPreviewImages(slice);
   return { posts: slice, total: all.length };
+}
+
+/** Return selected posts in the requested order, with preview images populated. */
+export async function getPostsBySlugs(slugs: string[]): Promise<BlogPost[]> {
+  const all = await fetchAllPosts();
+  const bySlug = new Map(all.map((post) => [post.slug, post]));
+  const posts = slugs.flatMap((slug) => {
+    const post = bySlug.get(slug);
+    return post ? [post] : [];
+  });
+  await enrichWithPreviewImages(posts);
+  return posts;
 }
 
 /** Enrich posts that lack a cover image with the first image block. */

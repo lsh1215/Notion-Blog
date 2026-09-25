@@ -51,4 +51,5 @@ screenshots/
 # claude code / omc
 .claude/
 .omc/
+.omx/
 .tasks/
