@@ -45,6 +45,108 @@ function ContentsLinks({
   );
 }
 
+interface ContentsGroup {
+  parent: TableOfContentsItem;
+  children: TableOfContentsItem[];
+}
+
+function groupContents(items: TableOfContentsItem[]): ContentsGroup[] {
+  const topLevel = Math.min(...items.map((item) => item.level));
+  const groups: ContentsGroup[] = [];
+
+  for (const item of items) {
+    if (item.level === topLevel || groups.length === 0) {
+      groups.push({ parent: item, children: [] });
+    } else {
+      groups.at(-1)?.children.push(item);
+    }
+  }
+
+  return groups;
+}
+
+function DesktopContentsLinks({
+  items,
+  activeId,
+}: {
+  items: TableOfContentsItem[];
+  activeId: string;
+}) {
+  return (
+    <ol className="border-l border-surface-border">
+      {groupContents(items).map(({ parent, children }) => {
+        const isParentActive = parent.id === activeId;
+        const hasActiveChild = children.some((child) => child.id === activeId);
+
+        return (
+          <li key={parent.id} className="group/toc">
+            <a
+              href={`#${parent.id}`}
+              aria-current={isParentActive ? "location" : undefined}
+              className={`-ml-px flex items-center justify-between gap-2 border-l py-2 pl-3 pr-2 text-sm leading-5 transition-colors ${
+                isParentActive
+                  ? "border-accent-violet font-semibold text-accent-violet"
+                  : hasActiveChild
+                    ? "border-accent-violet font-semibold text-ink"
+                    : "border-transparent font-medium text-ink-muted hover:border-ink-muted hover:text-ink"
+              }`}
+            >
+              <span>{parent.text}</span>
+              {children.length > 0 && (
+                <svg
+                  className={`h-3 w-3 shrink-0 transition-transform duration-200 group-hover/toc:rotate-180 group-focus-within/toc:rotate-180 ${
+                    hasActiveChild ? "rotate-180" : ""
+                  }`}
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="m3 4.5 3 3 3-3"
+                    stroke="currentColor"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </a>
+
+            {children.length > 0 && (
+              <ol
+                className={`ml-3 max-h-0 overflow-hidden border-l border-surface-border/70 opacity-0 transition-[max-height,opacity] duration-200 group-hover/toc:max-h-96 group-hover/toc:opacity-100 group-focus-within/toc:max-h-96 group-focus-within/toc:opacity-100 ${
+                  hasActiveChild ? "max-h-96 opacity-100" : ""
+                }`}
+              >
+                {children.map((child) => {
+                  const isActive = child.id === activeId;
+                  const indentation = child.level > parent.level + 1 ? "pl-6" : "pl-4";
+
+                  return (
+                    <li key={child.id}>
+                      <a
+                        href={`#${child.id}`}
+                        aria-current={isActive ? "location" : undefined}
+                        className={`-ml-px block border-l py-1.5 pr-2 text-xs leading-5 transition-colors ${indentation} ${
+                          isActive
+                            ? "border-accent-violet font-medium text-accent-violet"
+                            : "border-transparent text-ink-muted hover:border-ink-muted hover:text-ink"
+                        }`}
+                      >
+                        {child.text}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export function TableOfContents({ items, variant }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState(items[0]?.id ?? "");
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -136,7 +238,7 @@ export function TableOfContents({ items, variant }: TableOfContentsProps) {
       <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-ink-muted">
         목차
       </p>
-      <ContentsLinks items={items} activeId={activeId} />
+      <DesktopContentsLinks items={items} activeId={activeId} />
     </nav>
   );
 }
