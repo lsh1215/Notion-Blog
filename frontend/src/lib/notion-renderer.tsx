@@ -135,8 +135,8 @@ function renderParagraph(block: any) {
   return <p key={block.id}>{renderRichText(richTexts)}</p>;
 }
 
-function renderHeading(block: any, level: 1 | 2 | 3) {
-  const key = `heading_${level}` as "heading_1" | "heading_2" | "heading_3";
+function renderHeading(block: any, level: 1 | 2 | 3 | 4) {
+  const key = `heading_${level}`;
   const richTexts: RichTextObject[] = block[key]?.rich_text ?? [];
   const text = renderRichText(richTexts);
   const id = getHeadingId(block.id);
@@ -155,10 +155,17 @@ function renderHeading(block: any, level: 1 | 2 | 3) {
       </h2>
     );
   }
+  if (level === 3) {
+    return (
+      <h3 key={block.id} id={id}>
+        {text}
+      </h3>
+    );
+  }
   return (
-    <h3 key={block.id} id={id}>
+    <h4 key={block.id} id={id}>
       {text}
-    </h3>
+    </h4>
   );
 }
 
@@ -583,6 +590,8 @@ export async function NotionRenderer({ blocks }: NotionRendererProps) {
           return renderHeading(block, 2);
         case "heading_3":
           return renderHeading(block, 3);
+        case "heading_4":
+          return renderHeading(block, 4);
         case "code":
           return renderCodeAsync(block);
         case "image":

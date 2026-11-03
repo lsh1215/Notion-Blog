@@ -22,7 +22,7 @@ function ContentsLinks({
       {items.map((item) => {
         const isActive = item.id === activeId;
         const indentation =
-          item.level === 3 ? "pl-7" : item.level === 2 ? "pl-5" : "pl-3";
+          { 1: "pl-3", 2: "pl-5", 3: "pl-7", 4: "pl-9" }[item.level];
 
         return (
           <li key={item.id}>
@@ -120,7 +120,8 @@ function DesktopContentsLinks({
               >
                 {children.map((child) => {
                   const isActive = child.id === activeId;
-                  const indentation = child.level > parent.level + 1 ? "pl-6" : "pl-4";
+                  const depth = child.level - parent.level;
+                  const indentation = depth >= 3 ? "pl-8" : depth === 2 ? "pl-6" : "pl-4";
 
                   return (
                     <li key={child.id}>

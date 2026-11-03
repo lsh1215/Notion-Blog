@@ -1,10 +1,10 @@
 export interface TableOfContentsItem {
   id: string;
   text: string;
-  level: 1 | 2 | 3;
+  level: 1 | 2 | 3 | 4;
 }
 
-const HEADING_TYPES = new Set(["heading_1", "heading_2", "heading_3"]);
+const HEADING_TYPES = new Set(["heading_1", "heading_2", "heading_3", "heading_4"]);
 
 /** Keep heading anchors stable even when two headings have the same text. */
 export function getHeadingId(blockId: string): string {
@@ -27,7 +27,7 @@ export function extractTableOfContents(blocks: unknown[]): TableOfContentsItem[]
       return [];
     }
 
-    const level = Number(type.slice(-1)) as 1 | 2 | 3;
+    const level = Number(type.slice(-1)) as TableOfContentsItem["level"];
     const heading = blockRecord[type] as
       | { rich_text?: Array<{ plain_text?: string }> }
       | undefined;
