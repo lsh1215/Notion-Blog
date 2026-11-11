@@ -293,6 +293,31 @@ function renderImage(block: any) {
   );
 }
 
+interface ColumnBlock {
+  id: string;
+  column?: { width_ratio?: number };
+  children?: NotionRendererProps["blocks"];
+}
+
+function renderColumnList(block: { id: string; children?: ColumnBlock[] }) {
+  const columns = block.children ?? [];
+  if (columns.length === 0) return null;
+
+  return (
+    <div key={block.id} className="notion-columns">
+      {columns.map((column) => (
+        <div
+          key={column.id}
+          className="notion-column"
+          style={{ "--column-ratio": column.column?.width_ratio ?? 1 } as React.CSSProperties}
+        >
+          <NotionRenderer blocks={column.children ?? []} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function renderQuote(block: any) {
   const richTexts: RichTextObject[] = block.quote?.rich_text ?? [];
   return (
@@ -596,6 +621,8 @@ export async function NotionRenderer({ blocks }: NotionRendererProps) {
           return renderCodeAsync(block);
         case "image":
           return renderImage(block);
+        case "column_list":
+          return renderColumnList(block);
         case "quote":
           return renderQuote(block);
         case "callout":
