@@ -7,7 +7,7 @@ export const revalidate = 1800;
 const FEATURED_POST_SLUGS = [
   "3b83187fa1c9812e818df0c28862006a",
   "3973187fa1c981849c4beadbd91891be",
-  "3cf3187fa1c981d78a22fec8c6ec5a06",
+  "4153187fa1c981dda928d64d24e1aacd",
   "3cf3187fa1c981ebad30cbfbb088b54a",
   "3c53187fa1c981ce825edf7ffee02c0e",
 ];
